@@ -4,3 +4,12 @@
 *.changes
 *.tar.*
 .DS_Store
+
+# Debian packaging build artifacts
+/debian/.debhelper/
+/debian/reverse-bin/
+/debian/debhelper-build-stamp
+/debian/files
+/debian/*.debhelper
+/debian/*.debhelper.log
+/debian/*.substvars
