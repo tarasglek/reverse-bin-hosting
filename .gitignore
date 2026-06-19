@@ -13,3 +13,7 @@
 /debian/*.debhelper
 /debian/*.debhelper.log
 /debian/*.substvars
+
+# Python caches
+__pycache__/
+*.pyc
