@@ -106,22 +106,26 @@ sudo systemctl restart reverse-bin.service
 
 ## Health checks
 
-Use health names in Caddyfiles:
+A passing health check is required before reverse-bin starts proxying. Packaged Caddyfiles define fallback probes, and apps can override them through `.env` or `secrets.enc.json`:
 
-```caddyfile
-health_check GET /health
-health_timeout_ms 15000
+```sh
+REVERSE_BIN_HEALTH_METHOD=GET
+REVERSE_BIN_HEALTH_PATH=/health
 ```
 
-A plain `health_check METHOD PATH` accepts any `2xx` or `3xx` response. For auth-protected endpoints, add one exact expected status:
+For auth-required apps, include an exact expected status:
 
-```caddyfile
-health_check GET /v2/ 401
+```sh
+REVERSE_BIN_HEALTH_METHOD=GET
+REVERSE_BIN_HEALTH_PATH=/v2/
+REVERSE_BIN_HEALTH_STATUS=401
 ```
+
+Set both method and path together. Without `REVERSE_BIN_HEALTH_STATUS`, any `2xx` or `3xx` response is healthy.
 
 ## Explicit launch-script apps
 
-Apps can opt into a generic launch-script contract through `.env` in the app directory:
+Apps can use an explicit launch command through `.env` in the app directory:
 
 ```sh
 REVERSE_BIN_COMMAND=./launch.sh
@@ -192,24 +196,6 @@ sops --encrypt --input-type dotenv --output-type json --filename-override secret
 ```
 
 At runtime, systemd sets `SOPS_AGE_KEY_FILE=/var/lib/reverse-bin/keys/age.key`. `reverse-bin-detector` decrypts `secrets.enc.json` in memory with bundled `/usr/lib/reverse-bin/sops`, asks SOPS to output dotenv, and passes parsed keys to the child app. The private key stays outside app directories; child apps only receive `SOPS_AGE_KEY_FILE` if the app env explicitly defines it.
-
-## Manual app smoke runner
-
-Run any app directory through local reverse-bin/Caddy without Debian packaging:
-
-```bash
-utils/run-reverse-bin-app.sh /path/to/app 9080
-curl -i http://127.0.0.1:9080/
-```
-
-Wrangler registry smoke example:
-
-```bash
-utils/run-reverse-bin-app.sh ~/Downloads/serverless-registry 9080
-curl -i http://127.0.0.1:9080/v2/
-```
-
-Expected registry smoke result: HTTP `401` from the app, proving reverse-bin launched and proxied it.
 
 ## Credits and inspiration
 
