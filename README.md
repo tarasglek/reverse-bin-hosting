@@ -1,6 +1,8 @@
 # reverse-bin-hosting
 
-Multi-runtime equivalent of https://smallweb.run/ implemented via https://github.com/tarasglek/caddy-reverse-bin/ and packaged into a Debian dpkg package. This is a work-in-progress, for my eyes only.
+Multi-runtime equivalent of https://smallweb.run/ implemented via https://github.com/tarasglek/caddy-reverse-bin/ and packaged into a Debian dpkg package.
+
+This is a work-in-progress.
 
 ## App lifecycle model
 
@@ -8,9 +10,10 @@ Multi-runtime equivalent of https://smallweb.run/ implemented via https://github
 - On incoming request, reverse-bin starts the app and reverse-proxies to it
     1. Prior to launch [discover-app.py](utils/discover-app/discover-app.py) tries either load app config from env var params or discover it as a deno, python, or just static html
         * tries to run them in dev mode eg deno `--watch`
+        * envs are loaded from .env or SOPS-encrypted secrets.enc.json. launched app does not have access to sops key cos landlock
     2. discover-app returns a landrun-secure launch string to caddy 
     3. reverse-bin launches the process 
-- The app runs as a subprocess behind a local TCP port or Unix socket.
+- The app runs as a subprocess behind a local TCP port or Unix socket. Finding available http ports is race-prone, so few things have unix socket support. Deno pull req https://github.com/denoland/deno/pull/32094
 - Caddy/reverse-bin proxies public HTTP traffic to that local app subprocess.
 - Reverse-bin injects runtime environment such as `REVERSE_BIN_HOST`, `REVERSE_BIN_PORT`, and `HOME`.
 - `HOME` is set to `/var/lib/reverse-bin/apps/<app-name>/data` when the app does not define `HOME` itself.
@@ -51,12 +54,6 @@ The package installs these primary paths:
 - SOPS age recipient: `/var/lib/reverse-bin/keys/age.pub`
 - packaged examples: `/usr/share/doc/reverse-bin/examples/`
 
-## What it does
-
-1. Runs a custom Caddy binary with the `reverse-bin` handler.
-2. Uses `discover-app.py` to detect app entrypoints and proxy targets.
-3. Uses `landrun` and helper scripts installed under `/usr/lib/reverse-bin/`.
-
 ## Build the Debian package
 
 ```bash
@@ -74,40 +71,38 @@ This produces a `.deb` in the parent directory.
 - Example apps ship under `/usr/share/doc/reverse-bin/examples/` and can be copied into the app root.
 - The package generates the age identity once on install and never overwrites the private key.
 
-## Example deployment flow
+## Instructions
 
-```bash
-sudo editor /etc/default/reverse-bin
-sudo install -d -o reverse-bin -g reverse-bin /var/lib/reverse-bin/apps
-sudo cp -a /usr/share/doc/reverse-bin/examples/python3-unix-echo /var/lib/reverse-bin/apps/
-sudo chown -R reverse-bin:reverse-bin /var/lib/reverse-bin/apps/python3-unix-echo
-sudo systemctl enable reverse-bin.service
-sudo systemctl restart reverse-bin.service
-```
-
-Set these values in `/etc/default/reverse-bin` before restarting:
+1. Install the package:
 
 ```sh
-OPS_EMAIL=admin@overthinker.dev
-DOMAIN_SUFFIX=overthinker.dev
+sudo dpkg -i reverse-bin_*_amd64.deb
 ```
 
-## TLS and Cloudflare Tunnel modes
+2. Configure one mode in `/etc/default/reverse-bin`.
 
-For public HTTPS with Caddy-managed on-demand ACME certificates, use:
+Direct public HTTPS with Caddy-managed on-demand ACME:
 
 ```sh
 REVERSE_BIN_CADDYFILE=/etc/reverse-bin/Caddyfile.acme
+OPS_EMAIL=admin@example.com
+DOMAIN_SUFFIX=example.com
 ```
 
-When reverse-bin is behind a trusted proxy or Cloudflare Tunnel that terminates TLS, use HTTP-only mode:
+Cloudflared or another trusted TLS-terminating proxy:
 
 ```sh
 REVERSE_BIN_CADDYFILE=/etc/reverse-bin/Caddyfile.http-only
 REVERSE_BIN_HTTP_PORT=7777
 ```
 
-Point the tunnel ingress at `http://localhost:${REVERSE_BIN_HTTP_PORT}`. HTTP-only mode should not be exposed directly to the public internet without a trusted TLS-terminating proxy in front of it.
+Point Cloudflared ingress at `http://127.0.0.1:${REVERSE_BIN_HTTP_PORT}`. HTTP-only mode binds localhost and is not exposed externally.
+
+3. Restart reverse-bin:
+
+```sh
+sudo systemctl restart reverse-bin.service
+```
 
 ## Health checks
 
