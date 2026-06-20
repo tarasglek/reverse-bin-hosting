@@ -64,6 +64,16 @@ if [ ! -x "$LANDRUN_BIN" ]; then
 fi
 install_cached "$LANDRUN_BIN" landrun
 
+# reverse-bin-detector: build once into cache from tagged module source.
+DETECTOR_KEY="reverse-bin-detector/${REVERSE_BIN_DETECTOR_VERSION}/${OS}-${GOARCH}"
+DETECTOR_BIN="$CACHE_DIR/$DETECTOR_KEY/reverse-bin-detector"
+if [ ! -x "$DETECTOR_BIN" ]; then
+  mkdir -p "$(dirname -- "$DETECTOR_BIN")"
+  GONOSUMDB=github.com/tarasglek/reverse-bin-detector GOBIN="$TMP_DIR/bin" GOOS=linux GOARCH="$GOARCH" go install "${REVERSE_BIN_DETECTOR_MODULE}@${REVERSE_BIN_DETECTOR_VERSION}"
+  install -m 0755 "$TMP_DIR/bin/reverse-bin-detector" "$DETECTOR_BIN"
+fi
+install_cached "$DETECTOR_BIN" reverse-bin-detector
+
 # deno
 DENO_KEY="deno/${DENO_VERSION}/${OS}-${GOARCH}"
 DENO_BIN="$CACHE_DIR/$DENO_KEY/deno"

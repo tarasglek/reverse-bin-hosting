@@ -8,10 +8,10 @@ This is a work-in-progress.
 
 - Apps live under `/var/lib/reverse-bin/apps/<app-name>`.
 - On incoming request, reverse-bin starts the app and reverse-proxies to it
-    1. Prior to launch [discover-app.py](utils/discover-app/discover-app.py) tries either load app config from env var params or discover it as a deno, python, or just static html
+    1. Prior to launch `reverse-bin-detector` tries either load app config from env var params or discover it as a deno, python, or just static html
         * tries to run them in dev mode eg deno `--watch`
         * envs are loaded from .env or SOPS-encrypted secrets.enc.json. launched app does not have access to sops key cos landlock
-    2. discover-app returns a landrun-secure launch string to caddy 
+    2. reverse-bin-detector returns a landrun-secure launch string to caddy 
     3. reverse-bin launches the process 
 - The app runs as a subprocess behind a local TCP port or Unix socket. Finding available http ports is race-prone, so few things have unix socket support. Deno pull req https://github.com/denoland/deno/pull/32094
 - Caddy/reverse-bin proxies public HTTP traffic to that local app subprocess.
@@ -132,7 +132,7 @@ REVERSE_BIN_HEALTH_PATH=/v2/
 REVERSE_BIN_HEALTH_STATUS=401
 ```
 
-- `REVERSE_BIN_COMMAND` is the command `discover-app.py` runs.
+- `REVERSE_BIN_COMMAND` is the command `reverse-bin-detector` runs.
 - Blank `REVERSE_BIN_PORT=` asks the detector to allocate a free TCP port and inject the resolved value into the child environment.
 - Missing `REVERSE_BIN_HOST` defaults to `127.0.0.1`.
 - App launch scripts should bind to `REVERSE_BIN_HOST` and `REVERSE_BIN_PORT`.
@@ -144,7 +144,7 @@ Wrangler apps use this same explicit launch-script pattern; there is no Wrangler
 
 ## Encrypted app env files
 
-Apps may use either plaintext `.env` or encrypted `secrets.enc.json`, not both. `discover-app.py` rejects app directories containing both files to avoid ambiguous secret sources.
+Apps may use either plaintext `.env` or encrypted `secrets.enc.json`, not both. `reverse-bin-detector` rejects app directories containing both files to avoid ambiguous secret sources.
 
 Create plaintext dotenv first:
 
@@ -191,7 +191,7 @@ Encrypt `.env` to JSON, then remove plaintext only after encryption succeeds:
 sops --encrypt --input-type dotenv --output-type json --filename-override secrets.enc.json .env > secrets.enc.json && rm .env
 ```
 
-At runtime, systemd sets `SOPS_AGE_KEY_FILE=/var/lib/reverse-bin/keys/age.key`. `discover-app.py` decrypts `secrets.enc.json` in memory with bundled `/usr/lib/reverse-bin/sops`, asks SOPS to output dotenv, and passes parsed keys to the child app. The private key stays outside app directories; child apps only receive `SOPS_AGE_KEY_FILE` if the app env explicitly defines it.
+At runtime, systemd sets `SOPS_AGE_KEY_FILE=/var/lib/reverse-bin/keys/age.key`. `reverse-bin-detector` decrypts `secrets.enc.json` in memory with bundled `/usr/lib/reverse-bin/sops`, asks SOPS to output dotenv, and passes parsed keys to the child app. The private key stays outside app directories; child apps only receive `SOPS_AGE_KEY_FILE` if the app env explicitly defines it.
 
 ## Manual app smoke runner
 
@@ -210,6 +210,13 @@ curl -i http://127.0.0.1:9080/v2/
 ```
 
 Expected registry smoke result: HTTP `401` from the app, proving reverse-bin launched and proxied it.
+
+## Credits and inspiration
+
+- Smallweb for simple app-directory hosting and the Deno runtime shape.
+- Nixpacks for provider-style source detection patterns.
+- Cloud Native Buildpacks and Heroku buildpacks for detect-phase concepts.
+- pledge, unveil, Landlock, and Deno permissions for sandbox policy vocabulary.
 
 ## related projects
 

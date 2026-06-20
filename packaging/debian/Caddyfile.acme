@@ -30,7 +30,7 @@ https:// {
 		on_demand
 	}
 
-	# Map request host to the app directory consumed by discover-app.py.
+	# Map request host to the app directory consumed by reverse-bin-detector.
 	# The apex domain has no subdomain label, so serve it from the conventional "www" app.
 	# Single-label subdomains map to apps with the same name: post.coolness.fyi -> apps/post.
 	map {host} {reverse_bin_app_dir} {
@@ -41,7 +41,7 @@ https:// {
 	@app host {$DOMAIN_SUFFIX} *.{$DOMAIN_SUFFIX}
 	handle @app {
 		reverse-bin * {
-			dynamic_proxy_detector "/usr/lib/reverse-bin/discover-app.py" "{reverse_bin_app_dir}"
+			dynamic_proxy_detector "/usr/lib/reverse-bin/reverse-bin-detector" "{reverse_bin_app_dir}"
 			health_check HEAD /
 			idle_timeout_ms {$REVERSE_BIN_IDLE_TIMEOUT_MS:300000}
 			health_timeout_ms {$REVERSE_BIN_HEALTH_TIMEOUT_MS:15000}
