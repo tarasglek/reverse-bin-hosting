@@ -1,14 +1,10 @@
 # reverse-bin-hosting
 
-Opinionated Debian/systemd hosting package for apps served through the `caddy-reverse-bin` Caddy plugin.
+Multi-runtime equivalent of https://smallweb.run/ implemented via https://github.com/tarasglek/caddy-reverse-bin/ and packaged into a Debian dpkg package. This is a work-in-progress.
 
-## Relationship to caddy-reverse-bin
+## Runtimes
 
-This repository packages and deploys a Caddy binary built with `xcaddy` and the stable plugin release pinned in `packaging/runtime-versions.env`. Plugin behavior and tests live in `caddy-reverse-bin`; Debian packaging, systemd units, bundled helper runtimes, hosted app conventions, and deployment documentation live here.
-
-## Runtime version lockfile
-
-`packaging/runtime-versions.env` is the source of truth for stable bundled runtime versions: the Caddy plugin, `uv`, `landrun`, `deno`, `sops`, and `age`. `make update-runtime-versions` refreshes the lockfile to latest upstream stable releases. `make fetch-runtimes` downloads/builds those pinned binaries into `${XDG_CACHE_HOME:-$HOME/.cache}/reverse-bin-hosting/runtimes/` and copies them into `build/` for Debian packaging; CI caches that runtime cache keyed by the lockfile.
+`packaging/runtime-versions.env` is the source of truth for stable bundled runtime versions: `caddy-reverse-bin`, `uv`, `landrun`, `deno`, `sops`, and `age`. `make update-runtime-versions` refreshes the lockfile to latest upstream stable releases. `make fetch-runtimes` downloads/builds those pinned binaries into `${XDG_CACHE_HOME:-$HOME/.cache}/reverse-bin-hosting/runtimes/` and copies them into `build/` for Debian packaging; CI caches that runtime cache keyed by the lockfile.
 
 ## Debian package layout
 
