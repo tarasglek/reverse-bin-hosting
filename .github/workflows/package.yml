@@ -3,7 +3,11 @@ name: package
 on:
   push:
     branches: [master]
+    tags: ['v*']
   pull_request:
+
+permissions:
+  contents: write
 
 jobs:
   deb:
@@ -42,3 +46,22 @@ jobs:
 
       - name: Build Debian package
         run: make deb
+
+      - name: Collect package artifacts
+        run: |
+          mkdir -p dist
+          cp ../reverse-bin*.deb ../reverse-bin*.buildinfo ../reverse-bin*.changes dist/
+          ls -lh dist/
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: reverse-bin-debian-packages
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Attach package artifacts to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
