@@ -30,7 +30,6 @@ tests:
 	else \
 		echo "no Go packages to test"; \
 	fi
-	python3 -m unittest discover -s utils/discover-app -p 'test_*.py'
 
 clean:
 	rm -rf build debian/.debhelper debian/reverse-bin debian/debhelper-build-stamp debian/files

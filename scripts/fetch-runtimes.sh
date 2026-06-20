@@ -64,13 +64,18 @@ if [ ! -x "$LANDRUN_BIN" ]; then
 fi
 install_cached "$LANDRUN_BIN" landrun
 
-# reverse-bin-detector: build once into cache from tagged module source.
+# reverse-bin-detector: install the published release binary.
 DETECTOR_KEY="reverse-bin-detector/${REVERSE_BIN_DETECTOR_VERSION}/${OS}-${GOARCH}"
 DETECTOR_BIN="$CACHE_DIR/$DETECTOR_KEY/reverse-bin-detector"
 if [ ! -x "$DETECTOR_BIN" ]; then
-  mkdir -p "$(dirname -- "$DETECTOR_BIN")"
-  GONOSUMDB=github.com/tarasglek/reverse-bin-detector GOBIN="$TMP_DIR/bin" GOOS=linux GOARCH="$GOARCH" go install "${REVERSE_BIN_DETECTOR_MODULE}@${REVERSE_BIN_DETECTOR_VERSION}"
-  install -m 0755 "$TMP_DIR/bin/reverse-bin-detector" "$DETECTOR_BIN"
+  DETECTOR_ASSET="reverse-bin-detector_${OS}_${GOARCH}"
+  DETECTOR_DIR="$CACHE_DIR/$DETECTOR_KEY"
+  DETECTOR_SUMS="$DETECTOR_DIR/checksums.txt"
+  mkdir -p "$DETECTOR_DIR"
+  fetch "https://github.com/tarasglek/reverse-bin-detector/releases/download/${REVERSE_BIN_DETECTOR_VERSION}/${DETECTOR_ASSET}" "$DETECTOR_DIR/$DETECTOR_ASSET"
+  fetch "https://github.com/tarasglek/reverse-bin-detector/releases/download/${REVERSE_BIN_DETECTOR_VERSION}/checksums.txt" "$DETECTOR_SUMS"
+  ( cd "$DETECTOR_DIR" && grep "  ${DETECTOR_ASSET}$" checksums.txt | sha256sum -c - )
+  install -m 0755 "$DETECTOR_DIR/$DETECTOR_ASSET" "$DETECTOR_BIN"
 fi
 install_cached "$DETECTOR_BIN" reverse-bin-detector
 

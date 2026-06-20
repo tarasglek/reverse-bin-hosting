@@ -39,7 +39,7 @@ done
 if [ "$fail" -eq 0 ]; then
   uv_ver=$("$BIN_DIR/uv" --version | awk '{print $2}')
   landrun_ver=$(go_module_version "$BIN_DIR/landrun" github.com/zouuup/landrun)
-  detector_ver=$(go_module_version "$BIN_DIR/reverse-bin-detector" github.com/tarasglek/reverse-bin-detector)
+  detector_ver="v$("$BIN_DIR/reverse-bin-detector" --version | awk '{print $1}')"
   deno_ver=$("$BIN_DIR/deno" --version | awk 'NR==1 {print $2}')
   sops_ver=$("$BIN_DIR/sops" --version 2>/dev/null | awk 'NR==1 {print $2}')
   age_ver=$("$BIN_DIR/age" --version | awk '{print $1}')

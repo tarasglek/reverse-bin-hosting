@@ -1,3 +1,10 @@
+reverse-bin (0.0.0-15) unstable; urgency=medium
+
+  * fix(packaging): use published reverse-bin-detector v0.1.8 release binary.
+  * chore(packaging): remove legacy Python detector sources and tests.
+
+ -- Taras Glek <taras@example.com>  Sat, 20 Jun 2026 19:30:00 +0000
+
 reverse-bin (0.0.0-14) unstable; urgency=medium
 
   * ci(release): install Debian build-essential dependency in package workflow.
@@ -39,7 +46,7 @@ reverse-bin (0.0.0-9) unstable; urgency=medium
 
 reverse-bin (0.0.0-8) unstable; urgency=medium
 
-  * fix(discover-app): expose cgroup metadata to sandboxed apps.
+  * fix(detector): expose cgroup metadata to sandboxed apps.
 
  -- Taras Glek <taras@example.com>  Sun, 14 Jun 2026 14:12:00 +0300
 
@@ -55,23 +62,23 @@ reverse-bin (0.0.0-7) unstable; urgency=medium
 reverse-bin (0.0.0-6) unstable; urgency=medium
 
   * feat(health): support explicit health probe status codes.
-  * feat(discover-app): add REVERSE_BIN_HOST/PORT launch config.
-  * fix(discover-app): use landrun by default while keeping sandbox policy narrow.
+  * feat(detector): add REVERSE_BIN_HOST/PORT launch config.
+  * fix(detector): use landrun by default while keeping sandbox policy narrow.
 
  -- Taras Glek <taras@example.com>  Sun, 26 Apr 2026 13:30:34 +0300
 
 reverse-bin (0.0.0-5) unstable; urgency=medium
 
-  * fix(discover-app): allow TCP fallback for opaque explicit commands.
+  * fix(detector): allow TCP fallback for opaque explicit commands.
 
  -- Taras Glek <taras@example.com>  Sat, 25 Apr 2026 00:00:00 +0000
 
 reverse-bin (0.0.0-4) unstable; urgency=medium
 
-  * feat(discover-app): add readiness env overrides.
+  * feat(detector): add readiness env overrides.
   * fix(packaging): include uv in Debian package.
   * fix(packaging): create reverse-bin runtime dir.
-  * docs(discover-app): document readiness env overrides and environment variables.
+  * docs(detector): document readiness env overrides and environment variables.
 
  -- Taras Glek <taras@example.com>  Sat, 25 Apr 2026 00:00:00 +0000
 
