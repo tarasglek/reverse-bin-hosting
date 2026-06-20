@@ -50,7 +50,8 @@ jobs:
       - name: Collect package artifacts
         run: |
           mkdir -p dist
-          cp ../reverse-bin*.deb ../reverse-bin*.buildinfo ../reverse-bin*.changes dist/
+          version=$(dpkg-parsechangelog -S Version)
+          cp "../reverse-bin_${version}_amd64.deb" dist/
           ls -lh dist/
 
       - name: Upload package artifacts
