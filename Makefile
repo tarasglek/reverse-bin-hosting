@@ -1,7 +1,9 @@
 CADDY_BIN ?= ./build/reverse-bin-caddy
-CADDY_REVERSE_BIN_PLUGIN := github.com/tarasglek/caddy-reverse-bin@v0.2.1
+RUNTIME_CACHE_DIR ?= $(or $(XDG_CACHE_HOME),$(HOME)/.cache)/reverse-bin-hosting/runtimes
+export RUNTIME_CACHE_DIR
+include packaging/runtime-versions.env
 
-.PHONY: build deb tests clean
+.PHONY: build deb tests clean distclean clean-runtime-cache fetch-runtimes check-runtime-versions update-runtime-versions
 
 build:
 	mkdir -p build
@@ -9,8 +11,17 @@ build:
 	$(CADDY_BIN) list-modules | grep http.handlers.reverse-bin
 	$(CADDY_BIN) version
 
-deb:
+deb: fetch-runtimes
 	dpkg-buildpackage -us -uc -b
+
+fetch-runtimes:
+	./scripts/fetch-runtimes.sh
+
+check-runtime-versions:
+	./scripts/check-runtime-versions.sh
+
+update-runtime-versions:
+	./scripts/update-runtime-versions.sh
 
 tests:
 	packages=$$(go list ./... 2>/dev/null); \
@@ -24,3 +35,8 @@ tests:
 clean:
 	rm -rf build debian/.debhelper debian/reverse-bin debian/debhelper-build-stamp debian/files
 	rm -f debian/*.debhelper debian/*.debhelper.log debian/*.substvars
+
+distclean: clean
+
+clean-runtime-cache:
+	rm -rf $(RUNTIME_CACHE_DIR)

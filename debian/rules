@@ -2,20 +2,15 @@
 
 export DH_VERBOSE=1
 export PATH := /usr/local/go/bin:$(PATH)
-CADDY_REVERSE_BIN_PLUGIN := github.com/tarasglek/caddy-reverse-bin@v0.2.1
+include packaging/runtime-versions.env
 
 %:
 	dh $@
 
 override_dh_auto_build:
 	mkdir -p build
+	./scripts/fetch-runtimes.sh
 	xcaddy build --output build/reverse-bin-caddy --with $(CADDY_REVERSE_BIN_PLUGIN)
-	install -m 0755 "$(shell command -v uv)" build/uv
-	install -m 0755 "$(shell command -v landrun)" build/landrun
-	install -m 0755 "$(shell command -v deno)" build/deno
-	install -m 0755 "$(shell command -v sops)" build/sops
-	install -m 0755 "$(shell command -v age)" build/age
-	install -m 0755 "$(shell command -v age-keygen)" build/age-keygen
 
 override_dh_auto_test:
 

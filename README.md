@@ -4,7 +4,11 @@ Opinionated Debian/systemd hosting package for apps served through the `caddy-re
 
 ## Relationship to caddy-reverse-bin
 
-This repository packages and deploys a Caddy binary built with `xcaddy` and the hard-coded stable plugin release `github.com/tarasglek/caddy-reverse-bin@v0.2.1`. Plugin behavior and tests live in `caddy-reverse-bin`; Debian packaging, systemd units, bundled helper runtimes, hosted app conventions, and deployment documentation live here.
+This repository packages and deploys a Caddy binary built with `xcaddy` and the stable plugin release pinned in `packaging/runtime-versions.env`. Plugin behavior and tests live in `caddy-reverse-bin`; Debian packaging, systemd units, bundled helper runtimes, hosted app conventions, and deployment documentation live here.
+
+## Runtime version lockfile
+
+`packaging/runtime-versions.env` is the source of truth for stable bundled runtime versions: the Caddy plugin, `uv`, `landrun`, `deno`, `sops`, and `age`. `make update-runtime-versions` refreshes the lockfile to latest upstream stable releases. `make fetch-runtimes` downloads/builds those pinned binaries into `${XDG_CACHE_HOME:-$HOME/.cache}/reverse-bin-hosting/runtimes/` and copies them into `build/` for Debian packaging; CI caches that runtime cache keyed by the lockfile.
 
 ## Debian package layout
 

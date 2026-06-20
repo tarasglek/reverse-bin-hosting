@@ -2,7 +2,7 @@ Source: reverse-bin
 Section: web
 Priority: optional
 Maintainer: Taras Glek <taras@example.com>
-Build-Depends: debhelper-compat (= 13)
+Build-Depends: debhelper-compat (= 13), curl, unzip, ca-certificates
 Standards-Version: 4.7.2
 Rules-Requires-Root: no
 Homepage: https://github.com/tarasglek/reverse-bin

@@ -1,0 +1,44 @@
+name: package
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  deb:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.x'
+          cache: true
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y debhelper unzip curl
+          go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
+          echo "$HOME/go/bin" >> "$GITHUB_PATH"
+
+      - name: Cache packaged runtimes
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/reverse-bin-hosting/runtimes
+          key: runtimes-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('packaging/runtime-versions.env') }}
+          restore-keys: |
+            runtimes-${{ runner.os }}-${{ runner.arch }}-
+
+      - name: Fetch packaged runtimes
+        run: make fetch-runtimes
+
+      - name: Build Caddy binary
+        run: make build
+
+      - name: Run tests
+        run: make tests
+
+      - name: Build Debian package
+        run: make deb

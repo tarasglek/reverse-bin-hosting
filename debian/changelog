@@ -1,3 +1,11 @@
+reverse-bin (0.0.0-11) unstable; urgency=medium
+
+  * build(packaging): assemble pinned stable runtime binaries with cached downloads.
+  * build(caddy): build Caddy with the pinned caddy-reverse-bin plugin release.
+  * ci(packaging): add GitHub Actions package build with runtime caching.
+
+ -- Taras Glek <taras@example.com>  Sat, 20 Jun 2026 15:40:00 +0000
+
 reverse-bin (0.0.0-10) unstable; urgency=medium
 
   * feat(packaging): seed app SOPS recipient config.
