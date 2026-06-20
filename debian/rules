@@ -2,13 +2,14 @@
 
 export DH_VERBOSE=1
 export PATH := /usr/local/go/bin:$(PATH)
+CADDY_REVERSE_BIN_PLUGIN := github.com/tarasglek/caddy-reverse-bin@v0.2.1
 
 %:
 	dh $@
 
 override_dh_auto_build:
 	mkdir -p build
-	go build -o build/reverse-bin-caddy ./cmd/caddy
+	xcaddy build --output build/reverse-bin-caddy --with $(CADDY_REVERSE_BIN_PLUGIN)
 	install -m 0755 "$(shell command -v uv)" build/uv
 	install -m 0755 "$(shell command -v landrun)" build/landrun
 	install -m 0755 "$(shell command -v deno)" build/deno

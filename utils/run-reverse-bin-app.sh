@@ -56,7 +56,11 @@ http://127.0.0.1:$HTTP_PORT {
 }
 EOF
 
-printf 'reverse-bin app runner\n  app: %s\n  url: http://127.0.0.1:%s\n  caddyfile: %s\n' "$APP_DIR" "$HTTP_PORT" "$TEMP_CADDYFILE" >&2
+CADDY_BIN="$REPO_ROOT/build/reverse-bin-caddy"
+if [ ! -x "$CADDY_BIN" ]; then
+  (cd "$REPO_ROOT" && make build)
+fi
 
-cd "$REPO_ROOT"
-exec go run ./cmd/caddy run --adapter caddyfile --config "$TEMP_CADDYFILE"
+printf 'reverse-bin app runner\n  app: %s\n  url: http://127.0.0.1:%s\n  caddyfile: %s\n  caddy: %s\n' "$APP_DIR" "$HTTP_PORT" "$TEMP_CADDYFILE" "$CADDY_BIN" >&2
+
+exec "$CADDY_BIN" run --adapter caddyfile --config "$TEMP_CADDYFILE"

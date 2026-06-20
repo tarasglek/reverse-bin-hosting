@@ -4,7 +4,7 @@ Opinionated Debian/systemd hosting package for apps served through the `caddy-re
 
 ## Relationship to caddy-reverse-bin
 
-This repository packages and deploys a Caddy binary that includes the plugin from `github.com/tarasglek/reverse-bin`. Plugin behavior and tests live in `caddy-reverse-bin`; Debian packaging, systemd units, bundled helper runtimes, hosted app conventions, and deployment documentation live here.
+This repository packages and deploys a Caddy binary built with `xcaddy` and the hard-coded stable plugin release `github.com/tarasglek/caddy-reverse-bin@v0.2.1`. Plugin behavior and tests live in `caddy-reverse-bin`; Debian packaging, systemd units, bundled helper runtimes, hosted app conventions, and deployment documentation live here.
 
 ## Debian package layout
 
