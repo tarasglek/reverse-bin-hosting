@@ -46,7 +46,7 @@ cat > "$TEMP_CADDYFILE" <<EOF
 
 http://127.0.0.1:$HTTP_PORT {
 	reverse-bin {
-		dynamic_proxy_detector $REPO_ROOT/utils/discover-app/discover-app.py $APP_DIR
+		dynamic_proxy_detector $REPO_ROOT/build/reverse-bin-detector $APP_DIR
 		health_check HEAD /
 		idle_timeout_ms 300000
 		health_timeout_ms 15000
@@ -57,8 +57,9 @@ http://127.0.0.1:$HTTP_PORT {
 EOF
 
 CADDY_BIN="$REPO_ROOT/build/reverse-bin-caddy"
-if [ ! -x "$CADDY_BIN" ]; then
-  (cd "$REPO_ROOT" && make build)
+DETECTOR_BIN="$REPO_ROOT/build/reverse-bin-detector"
+if [ ! -x "$CADDY_BIN" ] || [ ! -x "$DETECTOR_BIN" ]; then
+  (cd "$REPO_ROOT" && make build fetch-runtimes)
 fi
 
 printf 'reverse-bin app runner\n  app: %s\n  url: http://127.0.0.1:%s\n  caddyfile: %s\n  caddy: %s\n' "$APP_DIR" "$HTTP_PORT" "$TEMP_CADDYFILE" "$CADDY_BIN" >&2

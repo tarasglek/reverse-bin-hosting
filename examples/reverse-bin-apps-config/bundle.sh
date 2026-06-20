@@ -29,6 +29,14 @@ fi
 UV_PATH="$(find_from_path uv)"
 LANDRUN_PATH="$(find_from_path landrun)"
 DENO_PATH="$(find_from_path deno)"
+DETECTOR_PATH="${REVERSE_BIN_DETECTOR_BIN:-}"
+if [[ -z "$DETECTOR_PATH" ]]; then
+  (
+    cd "$REPO_ROOT"
+    make fetch-runtimes
+  )
+  DETECTOR_PATH="$REPO_ROOT/build/reverse-bin-detector"
+fi
 
 STAGE_DIR="$(mktemp -d)"
 trap 'rm -rf "$STAGE_DIR"' EXIT
@@ -37,14 +45,14 @@ STAGE_ROOT="$STAGE_DIR/reverse-bin"
 mkdir -p "$STAGE_ROOT/.config" "$STAGE_ROOT/.bin" "$STAGE_ROOT/.run"
 cp "$ROOT_DIR/Caddyfile" "$STAGE_ROOT/.config/Caddyfile"
 cp "$ROOT_DIR/allow-domain.py" "$STAGE_ROOT/.bin/allow-domain.py"
-cp "$REPO_ROOT/utils/discover-app/discover-app.py" "$STAGE_ROOT/.bin/discover-app.py"
+cp "$DETECTOR_PATH" "$STAGE_ROOT/.bin/reverse-bin-detector"
 cp "$ROOT_DIR/run.sh" "$STAGE_ROOT/.bin/run.sh"
 cp "$ROOT_DIR/setup-systemd.py" "$STAGE_ROOT/.bin/setup-systemd.py"
 cp "$CADDY_PATH" "$STAGE_ROOT/.bin/caddy"
 cp "$UV_PATH" "$STAGE_ROOT/.bin/uv"
 cp "$LANDRUN_PATH" "$STAGE_ROOT/.bin/landrun"
 cp "$DENO_PATH" "$STAGE_ROOT/.bin/deno"
-chmod +x "$STAGE_ROOT/.bin/caddy" "$STAGE_ROOT/.bin/run.sh" "$STAGE_ROOT/.bin/setup-systemd.py" "$STAGE_ROOT/.bin/allow-domain.py" "$STAGE_ROOT/.bin/discover-app.py" "$STAGE_ROOT/.bin/uv" "$STAGE_ROOT/.bin/landrun" "$STAGE_ROOT/.bin/deno"
+chmod +x "$STAGE_ROOT/.bin/caddy" "$STAGE_ROOT/.bin/run.sh" "$STAGE_ROOT/.bin/setup-systemd.py" "$STAGE_ROOT/.bin/allow-domain.py" "$STAGE_ROOT/.bin/reverse-bin-detector" "$STAGE_ROOT/.bin/uv" "$STAGE_ROOT/.bin/landrun" "$STAGE_ROOT/.bin/deno"
 
 for sample_app in "${SAMPLE_APPS[@]}"; do
   sample_app_source="$REPO_ROOT/examples/reverse-proxy/apps/$sample_app"
