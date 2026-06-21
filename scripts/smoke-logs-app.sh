@@ -23,8 +23,10 @@ trap cleanup EXIT INT TERM
 
 cp -a "$APP_SRC/." "$TMP/"
 cd "$TMP"
-PATH="$ROOT/build:$PATH" ./setup.sh > setup.out
+PATH="$ROOT/build:$PATH" GOACCESS_BIN="$GOACCESS" ./setup.sh > setup.out
 [ -f .logs-dashboard-password ] || { echo "password file missing" >&2; exit 1; }
+[ -s data/html/index.html ] || { echo "initial GoAccess index missing" >&2; exit 1; }
+grep -q '<!DOCTYPE html>' data/html/index.html || { echo "setup did not generate GoAccess index" >&2; exit 1; }
 grep -q '^LOGS_BASIC_AUTH_HASH=' .env || { echo "auth hash missing" >&2; exit 1; }
 grep -q 'user: admin' setup.out || { echo "setup output missing admin" >&2; exit 1; }
 grep -q '/var/lib/reverse-bin/apps/logs/.logs-dashboard-password' setup.out || { echo "setup output missing password source" >&2; exit 1; }
@@ -59,6 +61,8 @@ code=$(curl -sS -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PORT/health")
 [ "$code" = 200 ] || { echo "/health got $code" >&2; exit 1; }
 code=$(curl -sS -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PORT/")
 [ "$code" = 401 ] || { echo "/ without auth got $code" >&2; exit 1; }
+code=$(curl -sS -u "admin:$PASSWORD" -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PORT/")
+[ "$code" = 200 ] || { echo "/ with auth placeholder got $code" >&2; exit 1; }
 
 append_log() {
   ts=$(python3 - <<'PY'
@@ -88,6 +92,7 @@ for _ in 1 2 3 4 5; do
   sleep 0.5
 done
 [ -s data/html/index.html ] || { echo "GoAccess did not write data/html/index.html" >&2; cat "$WS_ERR" >&2; cat caddy.out >&2; exit 1; }
+grep -q '<!DOCTYPE html>' data/html/index.html || { echo "GoAccess did not overwrite placeholder" >&2; cat "$WS_ERR" >&2; cat caddy.out >&2; exit 1; }
 code=$(curl -sS -u "admin:$PASSWORD" -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PORT/")
 [ "$code" = 200 ] || { echo "/ with auth after GoAccess got $code" >&2; exit 1; }
 

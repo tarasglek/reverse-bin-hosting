@@ -33,7 +33,7 @@
 - [ ] Main `README.md` has Logging dashboard section and links `/var/lib/reverse-bin/apps/logs/README.md`.
 - [ ] Logs app `README.md` says: run `./setup.sh`; login user `admin`; password is `cat /var/lib/reverse-bin/apps/logs/.logs-dashboard-password`.
 - [ ] Test tooling pulls test-only `websocat`.
-- [ ] Smoke test verifies setup, auth, WebSocket upgrade, and GoAccess HTML generation. Do not add custom realtime parsing beyond existing GoAccess/Caddy behavior.
+- [ ] Smoke test verifies setup, auth, initial GoAccess HTML page on `/`, internal WebSocket upgrade, and GoAccess runtime startup. Do not add custom realtime parsing beyond existing GoAccess/Caddy behavior.
 
 ## Task 1: Add Package Layout Test
 
@@ -161,7 +161,7 @@
 7. Assert `/` returns `200` with `admin:$(cat .logs-dashboard-password)`.
 8. Append a valid Caddy JSON access log row to `caddy-logs/access.log`.
 9. Connect to `/ws` with `build/test-tools/websocat` using Basic auth header.
-10. Assert `/ws` upgrades successfully, GoAccess starts through inner `reverse-bin`, and `data/html/index.html` is created by GoAccess. Do not create placeholder `index.html` in setup and do not make smoke depend on realtime frame timing.
+10. Assert setup pre-generates real GoAccess `data/html/index.html` so user-facing `/` is usable immediately after login. Assert internal `/ws` upgrades successfully and starts GoAccess through inner `reverse-bin`. Do not make smoke depend on realtime frame timing.
 11. Add Make target `smoke-logs-app`.
 12. Commit: `test: smoke test logs dashboard realtime websocket`.
 
@@ -171,4 +171,5 @@
 - `/health` open.
 - `/` auth works.
 - `/ws` accepts authenticated websocket.
-- GoAccess starts from `/ws` and writes `data/html/index.html`.
+- `/` serves GoAccess HTML immediately after setup.
+- GoAccess starts from internal `/ws` used by the generated page.
