@@ -1,3 +1,11 @@
+reverse-bin (0.0.0-16) unstable; urgency=medium
+
+  * feat(logs): ship a default logging dashboard sample app.
+  * feat(logs): bundle GoAccess and configure Caddy JSON access logs.
+  * feat(logs): add setup-generated dashboard auth with optional custom password.
+
+ -- Taras Glek <taras@example.com>  Sun, 21 Jun 2026 17:11:12 +0300
+
 reverse-bin (0.0.0-15) unstable; urgency=medium
 
   * fix(packaging): use published reverse-bin-detector v0.1.8 release binary.
