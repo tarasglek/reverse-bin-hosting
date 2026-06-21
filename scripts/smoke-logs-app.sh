@@ -23,8 +23,10 @@ trap cleanup EXIT INT TERM
 
 cp -a "$APP_SRC/." "$TMP/"
 cd "$TMP"
-PATH="$ROOT/build:$PATH" DOMAIN_SUFFIX=example.test ./setup.sh > setup.out
+CUSTOM_PASSWORD='user-chosen-test-password'
+PATH="$ROOT/build:$PATH" DOMAIN_SUFFIX=example.test ./setup.sh "$CUSTOM_PASSWORD" > setup.out
 [ -f .logs-dashboard-password ] || { echo "password file missing" >&2; exit 1; }
+[ "$(tr -d '\r\n' < .logs-dashboard-password)" = "$CUSTOM_PASSWORD" ] || { echo "custom password not stored" >&2; exit 1; }
 grep -q 'GoAccess dashboard initializing' data/html/index.html || { echo "setup placeholder missing" >&2; exit 1; }
 grep -q '^LOGS_BASIC_AUTH_HASH=' .env || { echo "auth hash missing" >&2; exit 1; }
 grep -q 'user: admin' setup.out || { echo "setup output missing admin" >&2; exit 1; }

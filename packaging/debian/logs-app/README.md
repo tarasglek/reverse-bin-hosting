@@ -13,6 +13,12 @@ cd /var/lib/reverse-bin/apps/logs
 ./setup.sh
 ```
 
+To choose the dashboard password yourself:
+
+```sh
+./setup.sh 'your-password-here'
+```
+
 Login user `admin`.
 
 Password is stored locally:

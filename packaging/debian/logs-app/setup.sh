@@ -6,6 +6,12 @@ ENV_FILE="$APP_DIR/.env"
 PASSWORD_FILE="$APP_DIR/.logs-dashboard-password"
 DEFAULTS_FILE=${DEFAULTS_FILE:-/etc/default/reverse-bin}
 
+if [ "$#" -gt 1 ]; then
+  echo "usage: $0 [dashboard-password]" >&2
+  exit 2
+fi
+CUSTOM_PASSWORD=${1:-}
+
 cd "$APP_DIR"
 mkdir -p data/html caddy-logs
 touch caddy-logs/access.log
@@ -23,7 +29,10 @@ fi
 LOGS_WS_URL=${LOGS_WS_URL:-logs.$DOMAIN_SUFFIX/ws}
 LOGS_WS_PORT=${LOGS_WS_PORT:-443}
 
-if [ ! -f "$PASSWORD_FILE" ]; then
+if [ -n "$CUSTOM_PASSWORD" ]; then
+  umask 077
+  printf '%s\n' "$CUSTOM_PASSWORD" > "$PASSWORD_FILE"
+elif [ ! -f "$PASSWORD_FILE" ]; then
   umask 077
   LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 > "$PASSWORD_FILE"
   printf '\n' >> "$PASSWORD_FILE"

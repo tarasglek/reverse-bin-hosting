@@ -35,6 +35,7 @@ grep -q 'mkdir -p data/html' "$APP/setup.sh" || fail "setup.sh must create data/
 grep -q 'DOMAIN_SUFFIX' "$APP/setup.sh" || fail "setup.sh must read DOMAIN_SUFFIX"
 grep -q 'LOGS_WS_URL=.*logs.*DOMAIN_SUFFIX.*/ws' "$APP/setup.sh" || fail "setup.sh must derive LOGS_WS_URL from DOMAIN_SUFFIX"
 grep -q '.logs-dashboard-password' "$APP/setup.sh" || fail "setup.sh must create/use dashboard password file"
+grep -q 'CUSTOM_PASSWORD' "$APP/setup.sh" || fail "setup.sh must accept custom password argument"
 grep -q 'chmod 600' "$APP/setup.sh" || fail "setup.sh must chmod password file 0600"
 grep -q 'hash-password' "$APP/setup.sh" || fail "setup.sh must precompute Caddy auth hash"
 grep -q 'LOGS_BASIC_AUTH_HASH=' "$APP/setup.sh" || fail "setup.sh must write LOGS_BASIC_AUTH_HASH"
@@ -51,6 +52,7 @@ grep -q 'reverse_proxy_to unix/data/goaccess.sock' "$APP/Caddyfile" || fail "Cad
 
 grep -q 'run `./setup.sh`' "$APP/README.md" || fail "logs README must mention setup.sh"
 grep -q 'user `admin`' "$APP/README.md" || fail "logs README must mention admin user"
+grep -q './setup.sh '\''your-password-here'\''' "$APP/README.md" || fail "logs README must document custom password setup"
 grep -q 'cat /var/lib/reverse-bin/apps/logs/.logs-dashboard-password' "$APP/README.md" || fail "logs README must mention password file"
 
 grep -q 'packaging/debian/logs-app/.env usr/share/reverse-bin/logs-app/' "$ROOT/debian/install" || fail "debian/install must install logs .env"
