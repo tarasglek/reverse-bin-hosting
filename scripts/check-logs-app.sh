@@ -31,6 +31,7 @@ grep -q 'goaccess_ver=' "$ROOT/scripts/check-runtime-versions.sh" || fail "runti
 grep -q 'build/goaccess usr/lib/reverse-bin/' "$ROOT/debian/install" || fail "debian/install must install bundled goaccess"
 
 grep -q 'mkdir -p data/html' "$APP/setup.sh" || fail "setup.sh must create data/html"
+grep -q 'new WebSocket' "$APP/setup.sh" || fail "setup.sh placeholder must trigger /ws so GoAccess can generate HTML"
 ! grep -q 'goaccess caddy-logs/access.log' "$APP/setup.sh" || fail "setup.sh must not run GoAccess"
 grep -q 'DOMAIN_SUFFIX' "$APP/setup.sh" || fail "setup.sh must read DOMAIN_SUFFIX"
 grep -q 'LOGS_WS_URL=.*logs.*DOMAIN_SUFFIX.*/ws' "$APP/setup.sh" || fail "setup.sh must derive LOGS_WS_URL from DOMAIN_SUFFIX"

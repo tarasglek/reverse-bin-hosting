@@ -15,8 +15,23 @@ CUSTOM_PASSWORD=${1:-}
 cd "$APP_DIR"
 mkdir -p data/html caddy-logs
 touch caddy-logs/access.log
-if [ ! -s data/html/index.html ]; then
-  printf '%s\n' 'GoAccess dashboard initializing. Reload shortly.' > data/html/index.html
+if [ ! -s data/html/index.html ] || grep -qx 'GoAccess dashboard initializing\. Reload shortly\.' data/html/index.html; then
+  cat > data/html/index.html <<'HTML'
+<!doctype html>
+<meta charset="utf-8">
+<title>GoAccess dashboard initializing</title>
+<p>GoAccess dashboard initializing. Reload shortly.</p>
+<script>
+(function () {
+  var scheme = location.protocol === 'https:' ? 'wss://' : 'ws://';
+  var ws = new WebSocket(scheme + location.host + '/ws');
+  var reload = function () { setTimeout(function () { location.reload(); }, 1500); };
+  ws.onopen = reload;
+  ws.onerror = reload;
+  setTimeout(reload, 4000);
+}());
+</script>
+HTML
 fi
 
 if [ -z "${DOMAIN_SUFFIX:-}" ] && [ -f "$DEFAULTS_FILE" ]; then

@@ -1,3 +1,9 @@
+reverse-bin (0.0.0-18) unstable; urgency=medium
+
+  * fix(logs): make initializer trigger the GoAccess websocket.
+
+ -- Taras Glek <taras@example.com>  Sun, 21 Jun 2026 17:28:00 +0300
+
 reverse-bin (0.0.0-17) unstable; urgency=medium
 
   * feat(logs): ship a default logging dashboard sample app.
