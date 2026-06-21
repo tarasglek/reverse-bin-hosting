@@ -83,7 +83,27 @@
 5. Run: `scripts/check-logs-app.sh`.
 6. Expected: PASS.
 
-## Task 5: Verify Runtime Behavior
+## Task 5: Reset Existing Logs App Before Package Test
+
+**Files:**
+- Existing runtime path: `/var/lib/reverse-bin/apps/logs`
+- Editable mirror if present: `/home/taras/smallweb/logs`
+
+**Steps:**
+1. Stop `reverse-bin.service` if testing on live host.
+2. Back up existing logs app instead of deleting raw logs blindly:
+   ```sh
+   ts=$(date +%Y%m%d%H%M%S)
+   sudo mv /var/lib/reverse-bin/apps/logs "/var/lib/reverse-bin/apps/logs.backup.$ts"
+   ```
+3. If `/home/taras/smallweb/logs` is a separate editable tree, move it too:
+   ```sh
+   mv /home/taras/smallweb/logs "/home/taras/smallweb/logs.backup.$ts"
+   ```
+4. Install package so `postinst` seeds fresh defaults.
+5. Verify fresh `/var/lib/reverse-bin/apps/logs` contains package sample only: no `bin/goaccess`, no `LOGS_BASIC_AUTH_HASH`.
+
+## Task 6: Verify Runtime Behavior
 
 **Commands:**
 ```sh
