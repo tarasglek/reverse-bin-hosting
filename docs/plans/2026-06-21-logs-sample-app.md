@@ -2,11 +2,11 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Ship a default `logs` app sample that exists after dpkg install but stays inactive until `setup.sh` downloads GoAccess and writes auth config.
+**Goal:** Ship a default `logs` app sample that exists after dpkg install but stays inactive until `setup.sh` writes auth config.
 
-**Architecture:** Debian package installs sample files under `/usr/share/reverse-bin/logs-app/` and seeds `/var/lib/reverse-bin/apps/logs/` on install without overwriting local changes. `setup.sh` prepares runtime-only pieces: `data/html`, app-local `bin/goaccess`, and `LOGS_BASIC_AUTH_HASH` computed from `/var/lib/reverse-bin/keys/age.pub`. The app runs inner Caddy directly from inline `REVERSE_BIN_COMMAND`.
+**Architecture:** Debian package bundles GoAccess with other reverse-bin runtime binaries. Package installs sample files under `/usr/share/reverse-bin/logs-app/` and seeds `/var/lib/reverse-bin/apps/logs/` on install without overwriting local changes. `setup.sh` only creates needed app data dirs, computes `LOGS_BASIC_AUTH_HASH` from `/var/lib/reverse-bin/keys/age.pub`, updates `.env`, and prints login instructions.
 
-**Tech Stack:** Debian packaging, POSIX shell, Caddyfile, GoAccess v1.10.2, reverse-bin explicit command apps.
+**Tech Stack:** Debian packaging, POSIX shell, Caddyfile, bundled GoAccess v1.10.2, reverse-bin explicit command apps.
 
 ---
 
@@ -14,15 +14,18 @@
 
 - [ ] dpkg creates `/var/lib/reverse-bin/apps/logs/caddy-logs/` for outer Caddy JSON logs.
 - [ ] dpkg seeds `/var/lib/reverse-bin/apps/logs/` sample app files.
+- [ ] Debian package bundles GoAccess with other runtime binaries.
 - [ ] Sample app ships no `bin/goaccess` binary.
 - [ ] Sample app ships no `launch.sh`.
 - [ ] `.env` uses inline command: `reverse-bin-caddy run --config Caddyfile --adapter caddyfile`.
 - [ ] `.env` ships without `LOGS_BASIC_AUTH_HASH` and without plaintext password.
-- [ ] `setup.sh` pins GoAccess `1.10.2`.
-- [ ] `setup.sh` downloads/builds or installs app-local `bin/goaccess`.
+- [ ] GoAccess version pinned to `v1.10.2` in runtime version config.
+- [ ] `setup.sh` does not download GoAccess.
 - [ ] `setup.sh` creates `data/html`.
 - [ ] `setup.sh` reads password from `/var/lib/reverse-bin/keys/age.pub`.
 - [ ] `setup.sh` precomputes Caddy hash and writes `LOGS_BASIC_AUTH_HASH=...` into `.env`.
+- [ ] `setup.sh` prints login instructions: user `admin`, password source `/var/lib/reverse-bin/keys/age.pub`.
+- [ ] Caddy uses bundled `/usr/lib/reverse-bin/goaccess`.
 - [ ] Caddy protects `/` and `/ws*` with username `admin` and `{$LOGS_BASIC_AUTH_HASH}`.
 - [ ] Caddy leaves `/health` open.
 - [ ] Main `README.md` has Logging dashboard section and links `/var/lib/reverse-bin/apps/logs/README.md`.
@@ -35,12 +38,28 @@
 - Create/modify: `scripts/check-logs-app.sh`
 
 **Steps:**
-1. Write shell check for sample files, missing `launch.sh`, missing `bin/goaccess`, `.env` inline command, no shipped auth, setup version/hash behavior, Caddy auth, README links.
-2. Run: `scripts/check-logs-app.sh`
+1. Write shell check for sample files, missing `launch.sh`, missing app-local `bin/goaccess`, `.env` inline command, no shipped auth, bundled GoAccess version, setup hash behavior, setup login output, Caddy auth, README links.
+2. Run: `scripts/check-logs-app.sh`.
 3. Expected: FAIL before implementation.
 4. Commit after pass later: `test(packaging): check logs sample app layout`.
 
-## Task 2: Add Logs Sample App
+## Task 2: Bundle GoAccess Runtime
+
+**Files:**
+- Modify: `packaging/runtime-versions.env`
+- Modify: `scripts/fetch-runtimes.sh`
+- Modify: `scripts/check-runtime-versions.sh`
+- Modify: `debian/install`
+
+**Steps:**
+1. Add `GOACCESS_VERSION=v1.10.2` to runtime versions.
+2. Extend runtime fetch to install `build/goaccess` from pinned GoAccess release/build.
+3. Verify `build/goaccess --version` reports `GoAccess - 1.10.2`.
+4. Install `build/goaccess usr/lib/reverse-bin/`.
+5. Run runtime version checks.
+6. Commit: `feat(packaging): bundle goaccess runtime`.
+
+## Task 3: Add Logs Sample App
 
 **Files:**
 - Create: `packaging/debian/logs-app/.env`
@@ -51,12 +70,13 @@
 **Steps:**
 1. Add `.env` with inline Caddy command and health config only.
 2. Add nested Caddy with `/health`, `/ws*`, static root, basic auth user `admin`.
-3. Add `setup.sh` that pins GoAccess 1.10.2, installs `bin/goaccess`, creates `data/html`, hashes age.pub into `.env`.
-4. Add logs app README.
-5. Run: `scripts/check-logs-app.sh`
-6. Expected: PASS.
+3. Point GoAccess command at `/usr/lib/reverse-bin/goaccess`.
+4. Add `setup.sh` that creates `data/html`, hashes age.pub into `.env`, and prints login instructions.
+5. Add logs app README.
+6. Run: `scripts/check-logs-app.sh`.
+7. Expected: PASS.
 
-## Task 3: Wire Debian Package Install
+## Task 4: Wire Debian Package Install
 
 **Files:**
 - Modify: `debian/install`
@@ -70,7 +90,7 @@
 4. Run: `scripts/check-logs-app.sh`.
 5. Expected: PASS.
 
-## Task 4: Document Logging Dashboard
+## Task 5: Document Logging Dashboard
 
 **Files:**
 - Modify: `README.md`
@@ -78,12 +98,12 @@
 **Steps:**
 1. Add `## Logging dashboard` near runtime/deployment docs.
 2. Explain outer Caddy JSON log target.
-3. Explain sample app exists by default but needs `/var/lib/reverse-bin/apps/logs/setup.sh`.
+3. Explain sample app exists by default but needs `/var/lib/reverse-bin/apps/logs/setup.sh` for credentials.
 4. Link `/var/lib/reverse-bin/apps/logs/README.md` for details.
 5. Run: `scripts/check-logs-app.sh`.
 6. Expected: PASS.
 
-## Task 5: Reset Existing Logs App Before Package Test
+## Task 6: Reset Existing Logs App Before Package Test
 
 **Files:**
 - Existing runtime path: `/var/lib/reverse-bin/apps/logs`
@@ -101,9 +121,9 @@
    mv /home/taras/smallweb/logs "/home/taras/smallweb/logs.backup.$ts"
    ```
 4. Install package so `postinst` seeds fresh defaults.
-5. Verify fresh `/var/lib/reverse-bin/apps/logs` contains package sample only: no `bin/goaccess`, no `LOGS_BASIC_AUTH_HASH`.
+5. Verify fresh `/var/lib/reverse-bin/apps/logs` contains package sample only: no app-local `bin/goaccess`, no `LOGS_BASIC_AUTH_HASH`; GoAccess exists at `/usr/lib/reverse-bin/goaccess`.
 
-## Task 6: Verify Runtime Behavior
+## Task 7: Verify Runtime Behavior
 
 **Commands:**
 ```sh
@@ -116,6 +136,7 @@ curl -i -u "admin:$(cat /var/lib/reverse-bin/keys/age.pub)" http://127.0.0.1:$PO
 ```
 
 **Expected:**
+- `setup.sh` prints login instructions.
 - Caddyfile validates.
 - `/health` returns `200` without auth.
 - `/` returns `401` without auth.
