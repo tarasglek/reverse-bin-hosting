@@ -1,0 +1,30 @@
+{
+	admin off
+	auto_https off
+}
+
+http://:{$REVERSE_BIN_PORT} {
+	bind {$REVERSE_BIN_HOST}
+
+	handle /health {
+		respond "ok" 200
+	}
+
+	handle /ws* {
+		basic_auth {
+			admin {$LOGS_BASIC_AUTH_HASH}
+		}
+		reverse-bin {
+			exec {$GOACCESS_BIN:/usr/lib/reverse-bin/goaccess} caddy-logs/access.log --log-format=CADDY --real-time-html --unix-socket=data/goaccess.sock --ws-url=/ws --port=443 --fifo-in=data/goaccess.fifo.in --fifo-out=data/goaccess.fifo.out -o data/html/index.html
+			reverse_proxy_to unix/data/goaccess.sock
+		}
+	}
+
+	handle {
+		basic_auth {
+			admin {$LOGS_BASIC_AUTH_HASH}
+		}
+		root * data/html
+		file_server
+	}
+}

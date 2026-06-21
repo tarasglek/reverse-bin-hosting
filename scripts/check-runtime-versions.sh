@@ -32,7 +32,7 @@ go_module_version() {
   go version -m "$bin" 2>/dev/null | awk -v module="$module" '$1 == "mod" && $2 == module { print $3 }'
 }
 
-for name in uv landrun reverse-bin-detector deno sops age age-keygen; do
+for name in uv landrun reverse-bin-detector deno sops age age-keygen goaccess; do
   need_file "$name" || true
 done
 
@@ -44,6 +44,7 @@ if [ "$fail" -eq 0 ]; then
   sops_ver=$("$BIN_DIR/sops" --version 2>/dev/null | awk 'NR==1 {print $2}')
   age_ver=$("$BIN_DIR/age" --version | awk '{print $1}')
   age_keygen_ver=$("$BIN_DIR/age-keygen" --version | awk '{print $1}')
+  goaccess_ver="v$("$BIN_DIR/goaccess" --version | awk 'NR==1 {gsub(/\.$/, "", $3); print $3}')"
 
   check_eq uv "$uv_ver" "${UV_VERSION#v}"
   check_eq landrun "$landrun_ver" "$LANDRUN_VERSION"
@@ -52,6 +53,7 @@ if [ "$fail" -eq 0 ]; then
   check_eq sops "v$sops_ver" "$SOPS_VERSION"
   check_eq age "$age_ver" "$AGE_VERSION"
   check_eq age-keygen "$age_keygen_ver" "$AGE_VERSION"
+  check_eq goaccess "$goaccess_ver" "$GOACCESS_VERSION"
 fi
 
 if [ "$fail" -ne 0 ]; then

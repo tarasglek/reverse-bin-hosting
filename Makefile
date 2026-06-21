@@ -3,7 +3,7 @@ RUNTIME_CACHE_DIR ?= $(or $(XDG_CACHE_HOME),$(HOME)/.cache)/reverse-bin-hosting/
 export RUNTIME_CACHE_DIR
 include packaging/runtime-versions.env
 
-.PHONY: build deb tests clean distclean clean-runtime-cache fetch-runtimes check-runtime-versions update-runtime-versions
+.PHONY: build deb tests clean distclean clean-runtime-cache fetch-runtimes fetch-test-runtimes check-runtime-versions update-runtime-versions smoke-logs-app
 
 build:
 	mkdir -p build
@@ -16,6 +16,12 @@ deb: fetch-runtimes
 
 fetch-runtimes:
 	./scripts/fetch-runtimes.sh
+
+fetch-test-runtimes:
+	./scripts/fetch-test-runtimes.sh
+
+smoke-logs-app: fetch-runtimes fetch-test-runtimes
+	./scripts/smoke-logs-app.sh
 
 check-runtime-versions:
 	./scripts/check-runtime-versions.sh

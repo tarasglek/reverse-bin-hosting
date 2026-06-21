@@ -117,4 +117,25 @@ fi
 install_cached "$AGE_BIN" age
 install_cached "$AGE_KEYGEN_BIN" age-keygen
 
+# goaccess: build pinned source locally. Keep features minimal for HTML/WebSocket use.
+GOACCESS_KEY="goaccess/${GOACCESS_VERSION}/${OS}-${GOARCH}"
+GOACCESS_BIN="$CACHE_DIR/$GOACCESS_KEY/goaccess"
+if [ ! -x "$GOACCESS_BIN" ]; then
+  GOACCESS_DIR="$CACHE_DIR/$GOACCESS_KEY"
+  GOACCESS_TAR="$GOACCESS_DIR/goaccess.tar.gz"
+  mkdir -p "$GOACCESS_DIR"
+  fetch "https://github.com/allinurl/goaccess/archive/refs/tags/${GOACCESS_VERSION}.tar.gz" "$GOACCESS_TAR"
+  rm -rf "$TMP_DIR/goaccess"
+  mkdir -p "$TMP_DIR/goaccess"
+  tar -xzf "$GOACCESS_TAR" -C "$TMP_DIR/goaccess" --strip-components=1
+  (
+    cd "$TMP_DIR/goaccess"
+    autoreconf -fiv
+    ./configure --prefix=/usr --disable-debug --disable-utf8 --without-openssl --without-zlib --disable-geoip
+    make -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || printf 1)"
+  )
+  install -m 0755 "$TMP_DIR/goaccess/goaccess" "$GOACCESS_BIN"
+fi
+install_cached "$GOACCESS_BIN" goaccess
+
 "$ROOT/scripts/check-runtime-versions.sh" "$BUILD_DIR"

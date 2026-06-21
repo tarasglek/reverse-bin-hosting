@@ -6,9 +6,15 @@ build/deno usr/lib/reverse-bin/
 build/sops usr/lib/reverse-bin/
 build/age usr/lib/reverse-bin/
 build/age-keygen usr/lib/reverse-bin/
+build/goaccess usr/lib/reverse-bin/
 examples/reverse-bin-apps-config/allow-domain.py usr/lib/reverse-bin/
 packaging/debian/Caddyfile etc/reverse-bin/
 packaging/debian/Caddyfile.acme etc/reverse-bin/
 packaging/debian/Caddyfile.http-only etc/reverse-bin/
 packaging/debian/reverse-bin etc/default/
+packaging/debian/reverse-bin.conf usr/lib/tmpfiles.d/
+packaging/debian/logs-app/.env usr/share/reverse-bin/logs-app/
+packaging/debian/logs-app/Caddyfile usr/share/reverse-bin/logs-app/
+packaging/debian/logs-app/setup.sh usr/share/reverse-bin/logs-app/
+packaging/debian/logs-app/README.md usr/share/reverse-bin/logs-app/
 packaging/examples/python3-unix-echo usr/share/doc/reverse-bin/examples/

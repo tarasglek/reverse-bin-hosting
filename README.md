@@ -104,6 +104,19 @@ Point Cloudflared ingress at `http://127.0.0.1:${REVERSE_BIN_HTTP_PORT}`. HTTP-o
 sudo systemctl restart reverse-bin.service
 ```
 
+## Logging dashboard
+
+The Debian package seeds a default `logs` app at `/var/lib/reverse-bin/apps/logs/`. Packaged outer Caddy configs write JSON access logs to `/var/lib/reverse-bin/apps/logs/caddy-logs/access.log` so GoAccess can render traffic stats.
+
+The app stays inactive until credentials are generated. After install, run:
+
+```sh
+cd /var/lib/reverse-bin/apps/logs
+./setup.sh
+```
+
+Login user is `admin`; setup stores password in `/var/lib/reverse-bin/apps/logs/.logs-dashboard-password`. See `/var/lib/reverse-bin/apps/logs/README.md` for details.
+
 ## Health checks
 
 A passing health check is required before reverse-bin starts proxying. Packaged Caddyfiles define fallback probes, and apps can override them through `.env` or `secrets.enc.json`:

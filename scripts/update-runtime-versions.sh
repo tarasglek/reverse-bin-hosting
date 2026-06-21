@@ -21,6 +21,7 @@ detector_version=$(latest_github_tag tarasglek/reverse-bin-detector)
 deno_version=$(latest_github_tag denoland/deno)
 sops_version=$(latest_github_tag getsops/sops)
 age_version=$(latest_github_tag FiloSottile/age)
+goaccess_version=$(latest_github_tag allinurl/goaccess)
 
 cat > "$TMP" <<EOF
 CADDY_REVERSE_BIN_PLUGIN=github.com/tarasglek/caddy-reverse-bin@${caddy_plugin_version}
@@ -30,6 +31,7 @@ LANDRUN_VERSION=${landrun_version}
 DENO_VERSION=${deno_version}
 SOPS_VERSION=${sops_version}
 AGE_VERSION=${age_version}
+GOACCESS_VERSION=${goaccess_version}
 EOF
 
 mv "$TMP" "$OUT"
