@@ -6,7 +6,7 @@
 
 **Architecture:** Debian package bundles GoAccess with other reverse-bin runtime binaries. Package installs sample files under `/usr/share/reverse-bin/logs-app/` and seeds `/var/lib/reverse-bin/apps/logs/` on install without overwriting local changes. `setup.sh` only creates needed app data dirs, computes `LOGS_BASIC_AUTH_HASH` from `/var/lib/reverse-bin/keys/age.pub`, updates `.env`, and prints login instructions.
 
-**Tech Stack:** Debian packaging, POSIX shell, Caddyfile, bundled GoAccess v1.10.2, reverse-bin explicit command apps.
+**Tech Stack:** Debian packaging, POSIX shell, Caddyfile, bundled GoAccess v1.10.2, test-only websocat, reverse-bin explicit command apps.
 
 ---
 
@@ -30,7 +30,8 @@
 - [ ] Caddy leaves `/health` open.
 - [ ] Main `README.md` has Logging dashboard section and links `/var/lib/reverse-bin/apps/logs/README.md`.
 - [ ] Logs app `README.md` says: run `./setup.sh`; login user `admin`; password is `cat /var/lib/reverse-bin/keys/age.pub`.
-- [ ] Verification covers package layout, Caddyfile syntax, and auth behavior.
+- [ ] Test tooling pulls test-only `websocat`.
+- [ ] Smoke test verifies setup, auth, WebSocket upgrade, and realtime GoAccess output.
 
 ## Task 1: Add Package Layout Test
 
@@ -123,21 +124,44 @@
 4. Install package so `postinst` seeds fresh defaults.
 5. Verify fresh `/var/lib/reverse-bin/apps/logs` contains package sample only: no app-local `bin/goaccess`, no `LOGS_BASIC_AUTH_HASH`; GoAccess exists at `/usr/lib/reverse-bin/goaccess`.
 
-## Task 7: Verify Runtime Behavior
+## Task 7: Add Test-Only WebSocket Tooling
 
-**Commands:**
-```sh
-cd /var/lib/reverse-bin/apps/logs
-./setup.sh
-reverse-bin-caddy validate --config Caddyfile --adapter caddyfile
-curl -i http://127.0.0.1:$PORT/health
-curl -i http://127.0.0.1:$PORT/
-curl -i -u "admin:$(cat /var/lib/reverse-bin/keys/age.pub)" http://127.0.0.1:$PORT/
-```
+**Files:**
+- Modify: `packaging/runtime-versions.env`
+- Create/modify: `scripts/fetch-test-runtimes.sh`
+- Modify: `Makefile`
+
+**Steps:**
+1. Add pinned `WEBSOCAT_VERSION` for test tooling only.
+2. Add `scripts/fetch-test-runtimes.sh` that downloads `websocat` into `build/test-tools/websocat` using existing runtime cache style.
+3. Add Make target `fetch-test-runtimes`.
+4. Do not install `websocat` into Debian package.
+5. Commit: `test: fetch websocat for smoke tests`.
+
+## Task 8: Add Logs App Realtime Smoke Test
+
+**Files:**
+- Create: `scripts/smoke-logs-app.sh`
+- Modify: `Makefile`
+
+**Steps:**
+1. Build/fetch package runtimes and test runtimes.
+2. Use fresh seeded logs app or copied package sample in temp dir.
+3. Run `./setup.sh` and assert it prints login instructions.
+4. Start inner Caddy with `REVERSE_BIN_HOST=127.0.0.1` and test port.
+5. Assert `/health` returns `200` without auth.
+6. Assert `/` returns `401` without auth.
+7. Assert `/` returns `200` with `admin:$(cat /var/lib/reverse-bin/keys/age.pub)`.
+8. Append a valid Caddy JSON access log row to `caddy-logs/access.log`.
+9. Connect to `/ws` with `build/test-tools/websocat` using Basic auth header.
+10. Assert websocket receives realtime GoAccess data after another log row is appended.
+11. Add Make target `smoke-logs-app`.
+12. Commit: `test: smoke test logs dashboard realtime websocket`.
 
 **Expected:**
 - `setup.sh` prints login instructions.
 - Caddyfile validates.
-- `/health` returns `200` without auth.
-- `/` returns `401` without auth.
-- `/` returns `200` with `admin:<age.pub>`.
+- `/health` open.
+- `/` auth works.
+- `/ws` accepts authenticated websocket.
+- GoAccess emits realtime websocket data when access log grows.
