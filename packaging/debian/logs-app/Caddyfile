@@ -15,7 +15,7 @@ http://:{$REVERSE_BIN_PORT} {
 			admin {$LOGS_BASIC_AUTH_HASH}
 		}
 		reverse-bin {
-			exec {$GOACCESS_BIN:/usr/lib/reverse-bin/goaccess} caddy-logs/access.log --log-format=CADDY --real-time-html --unix-socket=data/goaccess.sock --ws-url=/ws --port=443 --fifo-in=data/goaccess.fifo.in --fifo-out=data/goaccess.fifo.out -o data/html/index.html
+			exec {$GOACCESS_BIN:/usr/lib/reverse-bin/goaccess} caddy-logs/access.log --log-format=CADDY --real-time-html --unix-socket=data/goaccess.sock --ws-url={$LOGS_WS_URL} --port={$LOGS_WS_PORT:443} --fifo-in=data/goaccess.fifo.in --fifo-out=data/goaccess.fifo.out -o data/html/index.html
 			reverse_proxy_to unix/data/goaccess.sock
 		}
 	}

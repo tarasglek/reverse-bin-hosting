@@ -4,15 +4,24 @@ set -eu
 APP_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ENV_FILE="$APP_DIR/.env"
 PASSWORD_FILE="$APP_DIR/.logs-dashboard-password"
-PACKAGE_PASSWORD_FILE=/var/lib/reverse-bin/apps/logs/.logs-dashboard-password
+DEFAULTS_FILE=${DEFAULTS_FILE:-/etc/default/reverse-bin}
 
 cd "$APP_DIR"
 mkdir -p data/html caddy-logs
 touch caddy-logs/access.log
-GOACCESS_BIN=${GOACCESS_BIN:-/usr/lib/reverse-bin/goaccess}
-if [ ! -s data/html/index.html ] && [ -x "$GOACCESS_BIN" ]; then
-  "$GOACCESS_BIN" caddy-logs/access.log --log-format=CADDY -o data/html/index.html >/dev/null 2>&1
+if [ ! -s data/html/index.html ]; then
+  printf '%s\n' 'GoAccess dashboard initializing. Reload shortly.' > data/html/index.html
 fi
+
+if [ -z "${DOMAIN_SUFFIX:-}" ] && [ -f "$DEFAULTS_FILE" ]; then
+  DOMAIN_SUFFIX=$(awk -F= '$1 == "DOMAIN_SUFFIX" { gsub(/^[[:space:]]+|[[:space:]]+$/, "", $2); gsub(/^"|"$/, "", $2); gsub(/^'"'"'|'"'"'$/, "", $2); print $2; exit }' "$DEFAULTS_FILE")
+fi
+if [ -z "${DOMAIN_SUFFIX:-}" ]; then
+  echo "error: DOMAIN_SUFFIX is missing; set it in /etc/default/reverse-bin or environment" >&2
+  exit 1
+fi
+LOGS_WS_URL=${LOGS_WS_URL:-logs.$DOMAIN_SUFFIX/ws}
+LOGS_WS_PORT=${LOGS_WS_PORT:-443}
 
 if [ ! -f "$PASSWORD_FILE" ]; then
   umask 077
@@ -28,14 +37,16 @@ password=$(tr -d '\r\n' < "$PASSWORD_FILE")
 hash=$(reverse-bin-caddy hash-password --plaintext "$password")
 
 tmp=$(mktemp "$ENV_FILE.XXXXXX")
-awk '!/^LOGS_BASIC_AUTH_HASH=/' "$ENV_FILE" > "$tmp"
+awk '!/^LOGS_BASIC_AUTH_HASH=/ && !/^LOGS_WS_URL=/ && !/^LOGS_WS_PORT=/' "$ENV_FILE" > "$tmp"
 printf 'LOGS_BASIC_AUTH_HASH=%s\n' "$hash" >> "$tmp"
+printf 'LOGS_WS_URL=%s\n' "$LOGS_WS_URL" >> "$tmp"
+printf 'LOGS_WS_PORT=%s\n' "$LOGS_WS_PORT" >> "$tmp"
 cat "$tmp" > "$ENV_FILE"
 rm -f "$tmp"
 
 cat <<EOF
 Logging dashboard credentials ready.
-URL: https://logs.<your-domain>/
+URL: https://logs.$DOMAIN_SUFFIX/
 user: admin
-password: cat $PACKAGE_PASSWORD_FILE
+password: cat $PASSWORD_FILE
 EOF
