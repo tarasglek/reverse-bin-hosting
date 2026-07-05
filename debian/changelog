@@ -1,3 +1,12 @@
+reverse-bin (0.0.2-1) unstable; urgency=medium
+
+  * docs(security): add security posture checklist.
+  * feat(systemd): deny service access to home directories by default.
+  * chore(packaging): remove stale duplicate packaged service template.
+  * chore(gitignore): ignore common Debian build artifacts.
+
+ -- Taras Glek <taras@example.com>  Sun, 05 Jul 2026 13:05:00 +0300
+
 reverse-bin (0.0.1-1) unstable; urgency=medium
 
   * feat(skills): install reverse-bin web app skill into the app root.

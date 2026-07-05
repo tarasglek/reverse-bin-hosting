@@ -1,8 +1,11 @@
 /build/
 *.deb
+*.build
 *.buildinfo
 *.changes
+*.dsc
 *.tar.*
+*.upload
 .DS_Store
 
 # Debian packaging build artifacts
@@ -13,6 +16,9 @@
 /debian/*.debhelper
 /debian/*.debhelper.log
 /debian/*.substvars
+/debian/tmp/
+/debian/*-stamp
+/debian/*.log
 
 # Python caches
 __pycache__/
