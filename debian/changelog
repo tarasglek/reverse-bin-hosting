@@ -1,3 +1,10 @@
+reverse-bin (0.0.3-1) unstable; urgency=medium
+
+  * feat(detector): run apps in per-launch PID namespaces with private /proc.
+  * chore(packaging): depend on util-linux for the unshare namespace wrapper.
+
+ -- Taras Glek <taras@example.com>  Sun, 05 Jul 2026 13:25:00 +0300
+
 reverse-bin (0.0.2-1) unstable; urgency=medium
 
   * docs(security): add security posture checklist.

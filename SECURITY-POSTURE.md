@@ -50,29 +50,25 @@ Current baseline:
 
 Required direction:
 
-- [ ] Give each app its own PID namespace.
-- [ ] Give each app private `/proc` matching that PID namespace.
-- [ ] Prevent apps from seeing host process list.
-- [ ] Prevent apps from seeing sibling app processes.
-- [ ] Add IPC namespace isolation.
-- [ ] Add UTS namespace isolation.
-- [ ] Keep Landlock/landrun for filesystem and network allowlists.
+- [x] Give each app its own PID namespace.
+- [x] Give each app private `/proc` matching that PID namespace.
+- [x] Prevent apps from seeing host process list.
+- [x] Prevent apps from seeing sibling app processes.
+- [x] Add IPC namespace isolation.
+- [x] Add UTS namespace isolation.
+- [x] Keep Landlock/landrun for filesystem and network allowlists.
 
-Minimal likely shape:
+Current wrapper shape:
 
 ```sh
-bwrap \
-  --unshare-user \
-  --unshare-pid \
-  --unshare-ipc \
-  --unshare-uts \
-  --proc /proc \
-  --die-with-parent \
-  -- \
+unshare \
+  --map-current-user \
+  --pid --fork --mount-proc \
+  --ipc --uts --kill-child -- \
   landrun ... app command ...
 ```
 
-Exact wrapper may differ, but policy stays: namespaces for process view, Landlock for file/network access.
+The `unshare` wrapper comes from util-linux. `--map-current-user` keeps the app visible as the service user inside the namespace instead of root, so existing `reverse-bin`-owned `data/` writes continue to work. The PID namespace and private `/proc` hide host and sibling app process lists. This is not yet a per-app UID boundary: if an app learns a host PID through another channel, same-UID signal permissions may still apply. Future hardening should add per-app UIDs or systemd transient units for a stronger kill authorization boundary.
 
 ## Filesystem policy
 
@@ -121,8 +117,8 @@ App isolation checks:
 - [ ] App cannot read `/home`.
 - [ ] App cannot read `/var/lib/reverse-bin/keys/age.key`.
 - [ ] App cannot write outside its `data/` directory.
-- [ ] App cannot see host PIDs through `/proc`.
-- [ ] App cannot see sibling app PIDs.
+- [x] App cannot see host PIDs through `/proc`.
+- [x] App cannot see sibling app PIDs.
 - [ ] App cannot bind unassigned TCP ports.
 
 ## Non-goals for minimal posture
