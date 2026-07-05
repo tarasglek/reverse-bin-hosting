@@ -9,6 +9,8 @@ description: Use when writing or debugging web apps that might run under reverse
 
 Reverse-bin serves apps from an app root, normally `/var/lib/reverse-bin/apps`. In this skill, `APP_ROOT` means that app root. Each app lives in `APP_ROOT/<app-name>`, for example `APP_ROOT/my-app`. Apps are served by the outer `reverse-bin` Caddy using hostnames like `<app>.$DOMAIN_SUFFIX`.
 
+Packaged installs also place this skill under `APP_ROOT/skills/reverse-bin-web-apps/SKILL.md`. Symlinking the global agent skill to that installed copy is a good way to keep agent guidance in sync with the installed reverse-bin package.
+
 The app root may be mounted elsewhere for editing or deployment. For example, operators can bind-mount `/var/lib/reverse-bin/apps` to a user-editable directory, including with UID/GID remapping so non-root users can manage app files while the service still sees the canonical app paths.
 
 Before writing or debugging any web app, verify whether it is actually a reverse-bin app. This matters because reverse-bin changes app layout, writable paths, runtime environment, sandboxing, health checks, and proxy behavior. Do not assume a user-writable directory is ordinary source: check whether its directory is a symlink into the reverse-bin app root, a bind mount of `/var/lib/reverse-bin/apps`, or a UID/GID-remapped mount that presents reverse-bin app files as user-writable.

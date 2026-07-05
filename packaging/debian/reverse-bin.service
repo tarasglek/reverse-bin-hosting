@@ -12,6 +12,7 @@ RuntimeDirectory=reverse-bin
 Environment=PATH=/usr/lib/reverse-bin:/usr/bin:/bin
 Environment=SOPS_AGE_KEY_FILE=/var/lib/reverse-bin/keys/age.key
 EnvironmentFile=-/etc/default/reverse-bin
+ExecStartPre=/bin/sh -c 'echo "reverse-bin app skill: /var/lib/reverse-bin/apps/skills/reverse-bin-web-apps/SKILL.md"'
 ExecStart=/usr/bin/reverse-bin-caddy run --config ${REVERSE_BIN_CADDYFILE} --adapter caddyfile
 Restart=on-failure
 RestartSec=2

@@ -1,3 +1,10 @@
+reverse-bin (0.0.1-1) unstable; urgency=medium
+
+  * feat(skills): install reverse-bin web app skill into the app root.
+  * feat(systemd): log the installed app skill path on service start.
+
+ -- Taras Glek <taras@example.com>  Sun, 05 Jul 2026 12:40:00 +0000
+
 reverse-bin (0.0.0-19) unstable; urgency=medium
 
   * chore(caddy): update caddy-reverse-bin plugin to v0.3.1.
