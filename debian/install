@@ -18,4 +18,5 @@ packaging/debian/logs-app/Caddyfile usr/share/reverse-bin/logs-app/
 packaging/debian/logs-app/setup.sh usr/share/reverse-bin/logs-app/
 packaging/debian/logs-app/README.md usr/share/reverse-bin/logs-app/
 skills/reverse-bin-web-apps/SKILL.md usr/share/reverse-bin/skills/reverse-bin-web-apps/
+SECURITY-POSTURE.md usr/share/doc/reverse-bin/
 packaging/examples/python3-unix-echo usr/share/doc/reverse-bin/examples/

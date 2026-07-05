@@ -15,6 +15,10 @@ The app root may be mounted elsewhere for editing or deployment. For example, op
 
 Before writing or debugging any web app, verify whether it is actually a reverse-bin app. This matters because reverse-bin changes app layout, writable paths, runtime environment, sandboxing, health checks, and proxy behavior. Do not assume a user-writable directory is ordinary source: check whether its directory is a symlink into the reverse-bin app root, a bind mount of `/var/lib/reverse-bin/apps`, or a UID/GID-remapped mount that presents reverse-bin app files as user-writable.
 
+## Security Posture Reference
+
+Packaged installs include the current isolation model and verification checklist at `/usr/share/doc/reverse-bin/SECURITY-POSTURE.md`.
+
 ## Most Ergonomic Defaults
 
 Reverse-bin aims to be runtime-neutral: any well-behaved app can work if it follows the app layout, writable-state, health-check, and bind/socket rules.

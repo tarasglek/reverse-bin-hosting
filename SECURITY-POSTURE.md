@@ -45,7 +45,7 @@ Current detector baseline:
 - [x] Gives apps read/execute access to app source.
 - [x] Gives apps read/write access to app `data/`.
 - [x] Gives apps only required runtime/system paths.
-- [x] Uses explicit launch policy for network bind permissions.
+- [x] Uses app-type-specific network policy: static website apps get listen-only bind rules; non-static runtimes currently use unrestricted network for compatibility.
 - [x] Gives each launched app its own PID namespace.
 - [x] Mounts a private `/proc` matching that PID namespace.
 - [x] Prevents apps from seeing the host process list through `/proc`.
@@ -90,7 +90,7 @@ Current detector policy for launched apps:
 - [x] `/sys/fs/cgroup` is exposed read/execute for cgroup metadata.
 - [x] `/dev` is read/write as currently required by common runtimes.
 
-Observed policy shape:
+Common filesystem policy shape:
 
 ```sh
 landrun \
@@ -99,9 +99,10 @@ landrun \
   --rw /dev \
   --rw <app-dir>/data \
   --rox <app-dir> \
-  --bind-tcp <assigned-port> \
   ...
 ```
+
+Network flags vary by app type; see [Network policy](#network-policy).
 
 ## Secrets
 

@@ -1,7 +1,7 @@
 Source: reverse-bin
 Section: web
 Priority: optional
-Maintainer: Taras Glek <taras@example.com>
+Maintainer: Taras Glek <taras@glek.net>
 Build-Depends: debhelper-compat (= 13), curl, unzip, ca-certificates, autoconf, automake, autopoint, gettext, pkg-config, libncurses-dev
 Standards-Version: 4.7.2
 Rules-Requires-Root: no

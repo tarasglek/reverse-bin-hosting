@@ -1,9 +1,17 @@
+reverse-bin (0.0.4-1) unstable; urgency=medium
+
+  * docs(security): clarify baseline isolation and network posture.
+  * docs(packaging): install security posture checklist uncompressed.
+  * docs(skills): link app guidance to packaged security posture.
+
+ -- Taras Glek <taras@glek.net>  Sun, 05 Jul 2026 14:49:51 +0300
+
 reverse-bin (0.0.3-1) unstable; urgency=medium
 
   * feat(detector): run apps in per-launch PID namespaces with private /proc.
   * chore(packaging): depend on util-linux for the unshare namespace wrapper.
 
- -- Taras Glek <taras@example.com>  Sun, 05 Jul 2026 13:25:00 +0300
+ -- Taras Glek <taras@glek.net>  Sun, 05 Jul 2026 13:25:00 +0300
 
 reverse-bin (0.0.2-1) unstable; urgency=medium
 
@@ -12,26 +20,26 @@ reverse-bin (0.0.2-1) unstable; urgency=medium
   * chore(packaging): remove stale duplicate packaged service template.
   * chore(gitignore): ignore common Debian build artifacts.
 
- -- Taras Glek <taras@example.com>  Sun, 05 Jul 2026 13:05:00 +0300
+ -- Taras Glek <taras@glek.net>  Sun, 05 Jul 2026 13:05:00 +0300
 
 reverse-bin (0.0.1-1) unstable; urgency=medium
 
   * feat(skills): install reverse-bin web app skill into the app root.
   * feat(systemd): log the installed app skill path on service start.
 
- -- Taras Glek <taras@example.com>  Sun, 05 Jul 2026 12:40:00 +0000
+ -- Taras Glek <taras@glek.net>  Sun, 05 Jul 2026 12:40:00 +0000
 
 reverse-bin (0.0.0-19) unstable; urgency=medium
 
   * chore(caddy): update caddy-reverse-bin plugin to v0.3.1.
 
- -- Taras Glek <taras@example.com>  Tue, 23 Jun 2026 15:45:00 +0000
+ -- Taras Glek <taras@glek.net>  Tue, 23 Jun 2026 15:45:00 +0000
 
 reverse-bin (0.0.0-18) unstable; urgency=medium
 
   * fix(logs): make initializer trigger the GoAccess websocket.
 
- -- Taras Glek <taras@example.com>  Sun, 21 Jun 2026 17:28:00 +0300
+ -- Taras Glek <taras@glek.net>  Sun, 21 Jun 2026 17:28:00 +0300
 
 reverse-bin (0.0.0-17) unstable; urgency=medium
 
@@ -40,32 +48,32 @@ reverse-bin (0.0.0-17) unstable; urgency=medium
   * feat(logs): add setup-generated dashboard auth with optional custom password.
   * fix(detector): update reverse-bin-detector to v0.1.9.
 
- -- Taras Glek <taras@example.com>  Sun, 21 Jun 2026 17:25:00 +0300
+ -- Taras Glek <taras@glek.net>  Sun, 21 Jun 2026 17:25:00 +0300
 
 reverse-bin (0.0.0-15) unstable; urgency=medium
 
   * fix(packaging): use published reverse-bin-detector v0.1.8 release binary.
   * chore(packaging): remove legacy Python detector sources and tests.
 
- -- Taras Glek <taras@example.com>  Sat, 20 Jun 2026 19:30:00 +0000
+ -- Taras Glek <taras@glek.net>  Sat, 20 Jun 2026 19:30:00 +0000
 
 reverse-bin (0.0.0-14) unstable; urgency=medium
 
   * ci(release): install Debian build-essential dependency in package workflow.
 
- -- Taras Glek <taras@example.com>  Sat, 20 Jun 2026 16:00:00 +0000
+ -- Taras Glek <taras@glek.net>  Sat, 20 Jun 2026 16:00:00 +0000
 
 reverse-bin (0.0.0-13) unstable; urgency=medium
 
   * ci(release): install Python dotenv test dependency in package workflow.
 
- -- Taras Glek <taras@example.com>  Sat, 20 Jun 2026 15:55:00 +0000
+ -- Taras Glek <taras@glek.net>  Sat, 20 Jun 2026 15:55:00 +0000
 
 reverse-bin (0.0.0-12) unstable; urgency=medium
 
   * ci(release): build Debian packages in GitHub Actions and attach them to tagged releases.
 
- -- Taras Glek <taras@example.com>  Sat, 20 Jun 2026 15:50:00 +0000
+ -- Taras Glek <taras@glek.net>  Sat, 20 Jun 2026 15:50:00 +0000
 
 reverse-bin (0.0.0-11) unstable; urgency=medium
 
@@ -73,26 +81,26 @@ reverse-bin (0.0.0-11) unstable; urgency=medium
   * build(caddy): build Caddy with the pinned caddy-reverse-bin plugin release.
   * ci(packaging): add GitHub Actions package build with runtime caching.
 
- -- Taras Glek <taras@example.com>  Sat, 20 Jun 2026 15:40:00 +0000
+ -- Taras Glek <taras@glek.net>  Sat, 20 Jun 2026 15:40:00 +0000
 
 reverse-bin (0.0.0-10) unstable; urgency=medium
 
   * feat(packaging): seed app SOPS recipient config.
 
- -- Taras Glek <taras@example.com>  Tue, 16 Jun 2026 00:00:00 +0000
+ -- Taras Glek <taras@glek.net>  Tue, 16 Jun 2026 00:00:00 +0000
 
 reverse-bin (0.0.0-9) unstable; urgency=medium
 
   * feat(discovery): use SOPS JSON secrets.
   * docs(readme): document SOPS SSH/GitHub recipient setup.
 
- -- Taras Glek <taras@example.com>  Tue, 16 Jun 2026 00:00:00 +0000
+ -- Taras Glek <taras@glek.net>  Tue, 16 Jun 2026 00:00:00 +0000
 
 reverse-bin (0.0.0-8) unstable; urgency=medium
 
   * fix(detector): expose cgroup metadata to sandboxed apps.
 
- -- Taras Glek <taras@example.com>  Sun, 14 Jun 2026 14:12:00 +0300
+ -- Taras Glek <taras@glek.net>  Sun, 14 Jun 2026 14:12:00 +0300
 
 reverse-bin (0.0.0-7) unstable; urgency=medium
 
@@ -101,7 +109,7 @@ reverse-bin (0.0.0-7) unstable; urgency=medium
   * fix(packaging): keep app discovery sandboxed by default.
   * fix(health): preserve forwarded headers and redirect status in health probes.
 
- -- Taras Glek <taras@example.com>  Wed, 27 May 2026 15:51:16 +0300
+ -- Taras Glek <taras@glek.net>  Wed, 27 May 2026 15:51:16 +0300
 
 reverse-bin (0.0.0-6) unstable; urgency=medium
 
@@ -109,13 +117,13 @@ reverse-bin (0.0.0-6) unstable; urgency=medium
   * feat(detector): add REVERSE_BIN_HOST/PORT launch config.
   * fix(detector): use landrun by default while keeping sandbox policy narrow.
 
- -- Taras Glek <taras@example.com>  Sun, 26 Apr 2026 13:30:34 +0300
+ -- Taras Glek <taras@glek.net>  Sun, 26 Apr 2026 13:30:34 +0300
 
 reverse-bin (0.0.0-5) unstable; urgency=medium
 
   * fix(detector): allow TCP fallback for opaque explicit commands.
 
- -- Taras Glek <taras@example.com>  Sat, 25 Apr 2026 00:00:00 +0000
+ -- Taras Glek <taras@glek.net>  Sat, 25 Apr 2026 00:00:00 +0000
 
 reverse-bin (0.0.0-4) unstable; urgency=medium
 
@@ -124,22 +132,22 @@ reverse-bin (0.0.0-4) unstable; urgency=medium
   * fix(packaging): create reverse-bin runtime dir.
   * docs(detector): document readiness env overrides and environment variables.
 
- -- Taras Glek <taras@example.com>  Sat, 25 Apr 2026 00:00:00 +0000
+ -- Taras Glek <taras@glek.net>  Sat, 25 Apr 2026 00:00:00 +0000
 
 reverse-bin (0.0.0-3) unstable; urgency=medium
 
   * Fix /etc/default/reverse-bin to install as a file, not a directory.
 
- -- Taras Glek <taras@example.com>  Mon, 20 Apr 2026 00:00:00 +0000
+ -- Taras Glek <taras@glek.net>  Mon, 20 Apr 2026 00:00:00 +0000
 
 reverse-bin (0.0.0-2) unstable; urgency=medium
 
   * Add /etc/default/reverse-bin for deployment-specific config.
 
- -- Taras Glek <taras@example.com>  Sun, 20 Apr 2026 00:00:00 +0000
+ -- Taras Glek <taras@glek.net>  Sun, 20 Apr 2026 00:00:00 +0000
 
 reverse-bin (0.0.0-1) unstable; urgency=medium
 
   * Initial Debian packaging.
 
- -- Taras Glek <taras@example.com>  Fri, 18 Apr 2026 00:00:00 +0000
+ -- Taras Glek <taras@glek.net>  Fri, 18 Apr 2026 00:00:00 +0000

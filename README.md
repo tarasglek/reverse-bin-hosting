@@ -4,13 +4,15 @@ Multi-runtime equivalent of https://smallweb.run/ implemented via https://github
 
 This is a work-in-progress.
 
+Reverse-bin’s security goal is to protect the host from apps and apps from each other while keeping sandbox overhead to single-digit milliseconds at app startup. See [`SECURITY-POSTURE.md`](SECURITY-POSTURE.md) for the current isolation model and verification checklist.
+
 ## App lifecycle model
 
 - Apps live under `/var/lib/reverse-bin/apps/<app-name>`.
 - On incoming request, reverse-bin starts the app and reverse-proxies to it
     1. Prior to launch `reverse-bin-detector` tries either load app config from env var params or discover it as a deno, python, or just static html
         * tries to run them in dev mode eg deno `--watch`
-        * envs are loaded from .env or SOPS-encrypted secrets.enc.json. launched app does not have access to sops key cos landlock
+        * envs are loaded from `.env` or SOPS-encrypted `secrets.enc.json`; see [`SECURITY-POSTURE.md`](SECURITY-POSTURE.md) for key isolation details
     2. reverse-bin-detector returns a landrun-secure launch string to caddy 
     3. reverse-bin launches the process 
 - The app runs as a subprocess behind a local TCP port or Unix socket. Finding available http ports is race-prone, so few things have unix socket support. Deno pull req https://github.com/denoland/deno/pull/32094
@@ -52,6 +54,7 @@ The package installs these primary paths:
 - service home: `/var/lib/reverse-bin/home`
 - SOPS age identity: `/var/lib/reverse-bin/keys/age.key`
 - SOPS age recipient: `/var/lib/reverse-bin/keys/age.pub`
+- security posture checklist: [`SECURITY-POSTURE.md`](SECURITY-POSTURE.md)
 - packaged examples: `/usr/share/doc/reverse-bin/examples/`
 
 ## Build the Debian package
