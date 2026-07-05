@@ -35,8 +35,10 @@ jobs:
           restore-keys: |
             runtimes-${{ runner.os }}-${{ runner.arch }}-
 
-      - name: Fetch packaged runtimes
-        run: make fetch-runtimes
+      - name: Check bundled runtime versions are current
+        run: |
+          make update-runtime-versions
+          git diff --exit-code packaging/runtime-versions.env
 
       - name: Build Caddy binary
         run: make build
