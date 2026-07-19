@@ -15,12 +15,13 @@ Reverse-bin’s security goal is to protect the host from apps and apps from eac
         * envs are loaded from `.env` or SOPS-encrypted `secrets.enc.json`; see [`SECURITY-POSTURE.md`](SECURITY-POSTURE.md) for key isolation details
     2. reverse-bin-detector returns a landrun-secure launch string to caddy 
     3. reverse-bin launches the process 
-- The app runs as a subprocess behind a local TCP port or Unix socket. Finding available http ports is race-prone, so few things have unix socket support. Deno pull req https://github.com/denoland/deno/pull/32094
+- The app runs as a subprocess behind a local TCP port or Unix socket. Finding available HTTP ports is race-prone, so Unix sockets are preferred where supported. Deno pull request: https://github.com/denoland/deno/pull/32094
+- Static `index.html` and `dist/index.html` apps are served by nested Caddy over `/run/reverse-bin/static-apps/app-<hash>/reverse-bin.sock`. Static apps never listen on TCP; TCP listener environment configuration is rejected.
 - Caddy/reverse-bin proxies public HTTP traffic to that local app subprocess.
 - Reverse-bin injects runtime environment such as `REVERSE_BIN_HOST`, `REVERSE_BIN_PORT`, and `HOME`.
 - `HOME` is set to `/var/lib/reverse-bin/apps/<app-name>/data` when the app does not define `HOME` itself.
 - App runtime state should live under `/var/lib/reverse-bin/apps/<app-name>/data`.
-- Apps run inside a `landrun` sandbox with read access to app source, read-write access to app `data/`, required runtime/system paths, and any network/bind permissions granted by the discovered launch policy.
+- Apps run inside a `landrun` sandbox with read access to app source and required runtime/system paths. Non-static apps receive read-write access to app `data/` when present; static apps receive only their managed runtime socket directory as writable. Network/bind permissions follow the discovered launch policy.
 - App subprocesses are reused while active and terminated after the idle timeout.
 - If the discovered runtime uses watch mode, edits in the app directory can restart the subprocess automatically.
 
@@ -153,9 +154,9 @@ REVERSE_BIN_HEALTH_STATUS=401
 ```
 
 - `REVERSE_BIN_COMMAND` is the command `reverse-bin-detector` runs.
-- Blank `REVERSE_BIN_PORT=` asks the detector to allocate a free TCP port and inject the resolved value into the child environment.
-- Missing `REVERSE_BIN_HOST` defaults to `127.0.0.1`.
-- App launch scripts should bind to `REVERSE_BIN_HOST` and `REVERSE_BIN_PORT`.
+- For TCP command apps, blank `REVERSE_BIN_PORT=` asks the detector to allocate a free TCP port and inject the resolved value into the child environment.
+- For TCP command apps, missing `REVERSE_BIN_HOST` defaults to `127.0.0.1`.
+- TCP app launch scripts should bind to `REVERSE_BIN_HOST` and `REVERSE_BIN_PORT`.
 - App launch scripts may use packaged `uv` directly; it is available on the reverse-bin service `PATH`.
 - `HOME` defaults to app `data/`, so tools that respect `HOME` can keep runtime state there. If a tool uses separate cache/data variables, set them explicitly in `.env` or `launch.sh`.
 - `REVERSE_BIN_HEALTH_STATUS` is optional and enables exact-status health checks like registry `/v2/` returning `401`.

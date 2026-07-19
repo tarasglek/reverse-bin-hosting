@@ -43,7 +43,7 @@ Well-behaved Go apps also work well, especially when they support Unix sockets. 
 APP_ROOT/my-app/index.html
 ```
 
-Reverse-bin detects `index.html` and serves it with Caddy.
+Reverse-bin detects `index.html` and serves it with nested Caddy over a reverse-bin-managed Unix socket at `/run/reverse-bin/static-apps/app-<hash>/reverse-bin.sock`. Static apps cannot configure `SOCKET_PATH` or TCP listeners.
 
 ### Command app
 
@@ -92,7 +92,8 @@ Important: do **not** use `http://{$REVERSE_BIN_HOST}:{$REVERSE_BIN_PORT}`. That
 ## Writable vs Read-only Paths
 
 - App source is mounted read-only in the sandbox.
-- `data/` is writable.
+- For non-static apps, `data/` is writable when present.
+- Static apps receive only their managed `/run/reverse-bin/static-apps/app-<hash>/` socket directory as writable; their app `data/` remains read-only.
 - `HOME` defaults to `APP_ROOT/<app-name>/data` when the app does not define `HOME` itself.
 - Keep runtime state in `data/`: databases, uploads, generated assets, temp files, package-manager caches, managed toolchains, virtualenvs, lockfiles created at runtime, sockets, FIFOs, and Caddy state.
 - If a runtime ignores `HOME`, set its cache/data variables explicitly in `.env`, `secrets.enc.json`, or `launch.sh` so it writes under `data/`.
@@ -100,9 +101,9 @@ Important: do **not** use `http://{$REVERSE_BIN_HOST}:{$REVERSE_BIN_PORT}`. That
 
 ## Unix Sockets
 
-Prefer Unix sockets when the app/runtime supports them. They avoid race-prone free-port selection and make launches more deterministic. Put sockets under `data/` so they are writable inside the sandbox.
+Prefer Unix sockets when the app/runtime supports them. They avoid race-prone free-port selection, make launches more deterministic, and require no TCP bind permission. App-managed sockets belong under `data/` so they are writable inside the sandbox; static Caddy sockets are managed separately under `/run/reverse-bin/static-apps/`.
 
-Landrun only permits TCP bind on `$REVERSE_BIN_PORT`. For helper services needing a second listener, use Unix sockets under `data/`.
+Nested Caddy file-server accepts absolute Unix socket listeners such as `--listen unix///absolute/path.sock`. Landrun only permits TCP bind on `$REVERSE_BIN_PORT`; Unix socket transports need no `--bind-tcp`. For helper services needing a second listener, use Unix sockets under `data/`.
 
 Caddy proxy example:
 

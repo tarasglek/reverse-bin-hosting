@@ -45,7 +45,7 @@ Current detector baseline:
 - [x] Gives apps read/execute access to app source.
 - [x] Gives apps read/write access to app `data/`.
 - [x] Gives apps only required runtime/system paths.
-- [x] Uses app-type-specific network policy: static website apps get listen-only bind rules; non-static runtimes currently use unrestricted network for compatibility.
+- [x] Uses app-type-specific transport policy: static website apps get only their managed Unix socket directory; TCP runtimes get per-transport policy, while Deno remains unrestricted for compatibility.
 - [x] Gives each launched app its own PID namespace.
 - [x] Mounts a private `/proc` matching that PID namespace.
 - [x] Prevents apps from seeing the host process list through `/proc`.
@@ -68,7 +68,7 @@ unshare \
 
 Apps intentionally run under the shared host `reverse-bin` UID. `--map-current-user` maps the app namespace to that service UID instead of root, so existing `reverse-bin`-owned `data/` writes continue to work.
 
-Isolation is provided by Landlock path/network rules plus per-app PID/private `/proc`, IPC, and UTS namespaces, not by Unix user separation. Apps cannot enumerate host or sibling processes through `/proc`, cannot access paths outside their Landlock allowlist, and cannot write outside their own `data/` directory.
+Isolation is provided by Landlock path/network rules plus per-app PID/private `/proc`, IPC, and UTS namespaces, not by Unix user separation. Apps cannot enumerate host or sibling processes through `/proc` or access paths outside their Landlock allowlist. Writable paths are limited to app `data/` plus, for static apps, the exact reverse-bin-managed runtime socket directory.
 
 Per-app host UIDs are potential defense-in-depth only. They would not add protection under the current allowlist and namespace policy, so they are not part of the baseline.
 
@@ -77,7 +77,8 @@ Per-app host UIDs are potential defense-in-depth only. They would not add protec
 Current detector policy for launched apps:
 
 - [x] App source is read/execute-only in the Landlock sandbox (`--rox <app-dir>`).
-- [x] App `data/` is read/write (`--rw <app-dir>/data`).
+- [x] Non-static app `data/` is read/write when present (`--rw <app-dir>/data`).
+- [x] Static apps receive read/write access only to `/run/reverse-bin/static-apps/app-<hash>/` for their managed socket; app `data/` remains read-only with the rest of the source tree.
 - [x] `HOME` defaults to app `data/` when the app does not define `HOME`.
 - [x] `TMPDIR` defaults to `data`.
 - [x] Reverse-bin keys are outside app policy and inaccessible to apps.
@@ -97,12 +98,11 @@ landrun \
   --rox /bin,/usr,/lib,/lib64,/proc,/sys/fs/cgroup \
   --ro /etc \
   --rw /dev \
-  --rw <app-dir>/data \
   --rox <app-dir> \
   ...
 ```
 
-Network flags vary by app type; see [Network policy](#network-policy).
+Non-static apps add `--rw <app-dir>/data` when that directory exists. Static apps instead add only `--rw /run/reverse-bin/static-apps/app-<hash>` for their managed socket. Network flags vary by app type; see [Network policy](#network-policy).
 
 ## Secrets
 
@@ -120,18 +120,20 @@ Network flags vary by app type; see [Network policy](#network-policy).
 
 Apps intentionally share the host network namespace.
 
-Default network policy depends on app type. Static website apps run as a nested `reverse-bin-caddy file-server`. That process only needs to read static files and listen on its assigned backend port, so it uses the most restricted listen-only network policy: Landlock `--bind-tcp <assigned-port>`. Other app runtimes currently use unrestricted network access. The policy reverse-bin wants is narrower: restrict listen/bind to the assigned app port, but allow outbound connects.
+Default network policy depends on app type and transport. Static website apps run as nested `reverse-bin-caddy file-server` processes over reverse-bin-managed Unix sockets under `/run/reverse-bin/static-apps/app-<hash>/`. Static apps never use TCP listeners, reject TCP listener environment configuration, require no TCP bind permission, and need no outbound network access for normal serving.
 
-Current tools do not expose that policy directly. Deno has `--allow-net`, which covers both listen and connect. landrun has `--bind-tcp <port>`, which also restricts connects, or `--unrestricted-network`, which also allows arbitrary binds. Reverse-bin therefore uses unrestricted network for non-static runtimes until bind-only network handling is available.
+Unix socket runtimes require no TCP bind permission. Non-Deno TCP runtimes receive per-transport `landrun --bind-tcp <assigned-port>`, which also restricts outbound connects. Deno remains TCP-only and uses `--unrestricted-network` because its current compatibility mode needs outbound access and available tools do not separate connect permission from arbitrary binds. The desired future policy remains narrower: restrict listen/bind to the assigned app port while independently allowing outbound connects where required.
 
-Landlock also enforces filesystem access: app source is read/execute-only, app `data/` is read/write, `/etc` is read-only, required runtime paths are read/execute-only, and reverse-bin keys and sibling app state are outside the allowlist.
+Landlock also enforces filesystem access: app source is read/execute-only, non-static app `data/` is read/write when present, `/etc` is read-only, required runtime paths are read/execute-only, and reverse-bin keys and sibling app state are outside the allowlist. Static apps instead receive only their exact managed runtime socket directory as writable.
 
 - [x] Packaged HTTP-only Caddy mode binds only `127.0.0.1:${REVERSE_BIN_HTTP_PORT:-7777}`.
 - [x] ACME mode uses Caddy-managed HTTPS with on-demand TLS and an ask endpoint restricted to the configured domain suffix.
 - [x] Apps share the host network namespace intentionally.
-- [x] Static website apps use nested `reverse-bin-caddy file-server` with Landlock `--bind-tcp <assigned-port>`.
-- [x] Non-static runtimes use unrestricted network for compatibility.
-- [x] Landlock restricts filesystem access to app source, app `data/`, and required runtime paths.
+- [x] Static website apps use nested `reverse-bin-caddy file-server` over a Unix socket under `/run/reverse-bin/static-apps/app-<hash>/`.
+- [x] Static website apps require no TCP bind permission in their runtime sandbox.
+- [x] Static website apps require no outbound network access for normal serving.
+- [x] Deno remains TCP-only and uses unrestricted network for compatibility.
+- [x] Landlock restricts filesystem access to app source, app `data/`, the static app's exact runtime socket directory when applicable, and required runtime paths.
 - [x] Apps may use Unix sockets under app `data/` when runtime/app config supports them.
 - [ ] Potential hardening: add bind-only network handling so non-static runtimes can restrict listen ports while keeping outbound connects unrestricted.
 
@@ -169,7 +171,7 @@ App isolation checks:
 - [x] App cannot read `/root` in the packaged service. Verified from live `logs` GoAccess app namespace on 2026-07-05.
 - [x] App cannot read `/run/user` in the packaged service. Verified from live `logs` GoAccess app namespace on 2026-07-05.
 - [x] App cannot read `/var/lib/reverse-bin/keys/age.key`. Verified from live `logs` GoAccess app namespace plus app Landlock policy on 2026-07-05.
-- [x] App cannot write outside its `data/` directory. Verified from live `logs` GoAccess app namespace plus app Landlock policy on 2026-07-05.
+- [x] App cannot write outside its `data/` directory, except that static apps can write their exact managed runtime socket directory. App `data/` isolation was verified from the live `logs` GoAccess namespace plus Landlock policy on 2026-07-05; static runtime directory scope is covered by detector policy tests.
 - [x] App cannot see host PIDs through `/proc`.
 - [x] App cannot see sibling app PIDs through `/proc`.
 - [ ] App cannot bind unassigned TCP ports.
