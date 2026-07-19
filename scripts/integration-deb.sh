@@ -75,7 +75,6 @@ chmod 0755 /var/lib/reverse-bin/apps/exec/main.py
 
 systemctl restart reverse-bin.service
 systemctl is-active --quiet reverse-bin.service
-systemctl is-enabled --quiet reverse-bin.service
 
 request() {
     host=$1
