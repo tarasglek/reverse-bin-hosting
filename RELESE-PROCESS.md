@@ -14,6 +14,10 @@ make deb
 
 If `packaging/runtime-versions.env` changed, review and commit that runtime bump first, then rerun the gate.
 
+## Release notes gate
+
+Tagged builds generate GitHub release notes when attaching the Debian package. CI then reads the published release and fails if its notes are empty.
+
 ## Debian package validation
 
 After `make deb`:
