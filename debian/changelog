@@ -1,3 +1,13 @@
+reverse-bin (0.0.5-1) unstable; urgency=medium
+
+  * fix(detector): unify networking for all executable app runtimes.
+  * feat(detector): serve static apps over managed Unix sockets.
+  * fix(detector): allow read-only sysfs access for executable runtimes.
+  * chore(packaging): update bundled detector to v0.1.12.
+  * chore(packaging): refresh uv and Deno runtime versions.
+
+ -- Taras Glek <taras@glek.net>  Sun, 19 Jul 2026 11:45:00 +0300
+
 reverse-bin (0.0.4-1) unstable; urgency=medium
 
   * docs(security): clarify baseline isolation and network posture.

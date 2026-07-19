@@ -21,7 +21,7 @@ Reverse-bin’s security goal is to protect the host from apps and apps from eac
 - Reverse-bin injects runtime environment such as `REVERSE_BIN_HOST`, `REVERSE_BIN_PORT`, and `HOME`.
 - `HOME` is set to `/var/lib/reverse-bin/apps/<app-name>/data` when the app does not define `HOME` itself.
 - App runtime state should live under `/var/lib/reverse-bin/apps/<app-name>/data`.
-- Apps run inside a `landrun` sandbox with read access to app source and required runtime/system paths. Non-static apps receive read-write access to app `data/` when present; static apps receive only their managed runtime socket directory as writable. Network/bind permissions follow the discovered launch policy.
+- Apps run inside a `landrun` sandbox with read access to app source and required runtime/system paths. Executable apps receive read-write access to app `data/` when present, read-only `/sys`, and unrestricted networking. Static apps receive only their managed runtime socket directory as writable and no network access.
 - App subprocesses are reused while active and terminated after the idle timeout.
 - If the discovered runtime uses watch mode, edits in the app directory can restart the subprocess automatically.
 

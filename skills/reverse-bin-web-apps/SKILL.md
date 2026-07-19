@@ -103,7 +103,7 @@ Important: do **not** use `http://{$REVERSE_BIN_HOST}:{$REVERSE_BIN_PORT}`. That
 
 Prefer Unix sockets when the app/runtime supports them. They avoid race-prone free-port selection, make launches more deterministic, and require no TCP bind permission. App-managed sockets belong under `data/` so they are writable inside the sandbox; static Caddy sockets are managed separately under `/run/reverse-bin/static-apps/`.
 
-Nested Caddy file-server accepts absolute Unix socket listeners such as `--listen unix///absolute/path.sock`. Landrun only permits TCP bind on `$REVERSE_BIN_PORT`; Unix socket transports need no `--bind-tcp`. For helper services needing a second listener, use Unix sockets under `data/`.
+Nested Caddy file-server accepts absolute Unix socket listeners such as `--listen unix///absolute/path.sock`. Executable apps currently receive unrestricted networking, including bind access, while static apps receive none. Prefer Unix sockets under `data/` for helper services to avoid TCP port races and unnecessary exposure.
 
 Caddy proxy example:
 
