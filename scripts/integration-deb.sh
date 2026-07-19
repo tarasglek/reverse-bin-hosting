@@ -45,7 +45,8 @@ install -d -o reverse-bin -g reverse-bin /var/lib/reverse-bin/apps/exec/data
 cat > /var/lib/reverse-bin/apps/exec/main.py <<'PY'
 #!/usr/bin/python3
 import os
-from http.server import BaseHTTPRequestHandler, HTTPServer
+import socketserver
+from http.server import BaseHTTPRequestHandler
 
 MARKER = "reverse-bin-executable-integration-ok"
 
@@ -65,10 +66,12 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, *_args):
         pass
 
-HTTPServer(
-    (os.environ["REVERSE_BIN_HOST"], int(os.environ["REVERSE_BIN_PORT"])),
-    Handler,
-).serve_forever()
+socket_path = os.environ["SOCKET_PATH"]
+try:
+    os.unlink(socket_path)
+except FileNotFoundError:
+    pass
+socketserver.UnixStreamServer(socket_path, Handler).serve_forever()
 PY
 chown reverse-bin:reverse-bin /var/lib/reverse-bin/apps/exec/main.py
 chmod 0755 /var/lib/reverse-bin/apps/exec/main.py
