@@ -16,7 +16,14 @@ If `packaging/runtime-versions.env` changed, review and commit that runtime bump
 
 ## Release notes gate
 
-Tagged builds generate GitHub release notes when attaching the Debian package. CI then reads the published release and fails if its notes are empty.
+Before tagging `vX.Y.Z`, add `release-notes/vX.Y.Z.md`. Follow the categorized ESPHome/Home Assistant style used by existing notes:
+
+- `# Reverse Bin vX.Y.Z`
+- `## Highlights` with at least one user-facing bullet
+- `## Breaking changes`, explicitly saying `None.` when applicable
+- `## Full list of changes` with at least one bullet
+
+Tagged CI validates this structure before publishing and uses the authored file as the GitHub release body. A missing or incomplete file fails the release instead of publishing empty or generic generated notes.
 
 ## Debian package validation
 

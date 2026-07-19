@@ -21,8 +21,8 @@ grep -q 'websocat_version=' "$UPDATER" || fail "runtime updater must refresh WEB
 grep -q 'WEBSOCAT_VERSION=${websocat_version}' "$UPDATER" || fail "runtime updater must write WEBSOCAT_VERSION"
 grep -q 'make update-runtime-versions' "$PROCESS" || fail "release process must document runtime update gate"
 grep -q 'git diff --exit-code packaging/runtime-versions.env' "$PROCESS" || fail "release process must document lockfile diff gate"
-grep -q 'generate_release_notes: true' "$WORKFLOW" || fail "tag releases must generate release notes"
-grep -q 'Require release notes' "$WORKFLOW" || fail "tag releases must reject empty release notes"
-grep -q 'gh release view' "$WORKFLOW" || fail "release notes guard must inspect the GitHub release"
+grep -q 'Validate release notes' "$WORKFLOW" || fail "tag releases must validate authored release notes"
+grep -q 'check-release-notes.sh' "$WORKFLOW" || fail "tag releases must enforce the release notes format"
+grep -q 'body_path: release-notes/' "$WORKFLOW" || fail "GitHub releases must use authored release notes"
 
 echo "release gate checks passed"
