@@ -51,6 +51,9 @@ jobs:
 
       - name: Test installed Debian package
         run: |
+          if [ -e /proc/sys/kernel/apparmor_restrict_unprivileged_userns ]; then
+            sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          fi
           version=$(dpkg-parsechangelog -S Version)
           sudo ./scripts/integration-deb.sh "../reverse-bin_${version}_amd64.deb"
 
