@@ -19,8 +19,7 @@ latest_github_tag() {
     | python3 -c 'import json,sys; print(json.load(sys.stdin)[0]["name"])'
 }
 
-caddy_plugin_version=$(go list -m -json github.com/tarasglek/caddy-reverse-bin@latest \
-  | python3 -c 'import json,sys; print(json.load(sys.stdin)["Version"])')
+caddy_plugin_version=$(latest_github_release tarasglek/caddy-reverse-bin)
 uv_version=$(latest_github_release astral-sh/uv)
 landrun_version=$(latest_github_release zouuup/landrun)
 detector_version=$(latest_github_release tarasglek/reverse-bin-detector)
