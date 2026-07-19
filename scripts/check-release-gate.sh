@@ -17,6 +17,7 @@ fail() {
 
 grep -q 'make update-runtime-versions' "$WORKFLOW" || fail "CI must run runtime version updater"
 grep -q 'git diff --exit-code packaging/runtime-versions.env' "$WORKFLOW" || fail "CI must fail when runtime version updater changes lockfile"
+grep -q 'scripts/integration-deb.sh' "$WORKFLOW" || fail "CI must test the installed Debian package"
 grep -q 'websocat_version=' "$UPDATER" || fail "runtime updater must refresh WEBSOCAT_VERSION"
 grep -q 'WEBSOCAT_VERSION=${websocat_version}' "$UPDATER" || fail "runtime updater must write WEBSOCAT_VERSION"
 grep -q 'make update-runtime-versions' "$PROCESS" || fail "release process must document runtime update gate"

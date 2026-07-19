@@ -49,6 +49,11 @@ jobs:
       - name: Build Debian package
         run: make deb
 
+      - name: Test installed Debian package
+        run: |
+          version=$(dpkg-parsechangelog -S Version)
+          sudo ./scripts/integration-deb.sh "../reverse-bin_${version}_amd64.deb"
+
       - name: Collect package artifacts
         run: |
           mkdir -p dist
