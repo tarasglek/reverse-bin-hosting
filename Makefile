@@ -36,6 +36,7 @@ tests:
 	else \
 		echo "no Go packages to test"; \
 	fi
+	./scripts/check-caddy-listeners.sh
 
 clean:
 	rm -rf build debian/.debhelper debian/reverse-bin debian/debhelper-build-stamp debian/files

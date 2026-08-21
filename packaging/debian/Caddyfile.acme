@@ -8,6 +8,7 @@
 }
 
 http://127.0.0.1:9080 {
+	bind 127.0.0.1
 	handle /allow-domain* {
 		reverse-bin * {
 			exec /usr/lib/reverse-bin/allow-domain.py /run/reverse-bin/allow-domain.sock /var/lib/reverse-bin/apps --allowed-suffix .{$DOMAIN_SUFFIX}
