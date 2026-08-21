@@ -24,7 +24,7 @@ grep -qx 'REVERSE_BIN_HEALTH_PATH=/health' "$APP/.env" || fail ".env must set he
 ! grep -q '^LOGS_BASIC_AUTH_HASH=' "$APP/.env" || fail ".env must not ship LOGS_BASIC_AUTH_HASH"
 ! grep -q '^LOGS_BASIC_AUTH_PASSWORD=' "$APP/.env" || fail ".env must not ship plaintext password"
 
-grep -qx 'GOACCESS_VERSION=v1\.10\.2' "$ROOT/packaging/runtime-versions.env" || fail "runtime versions must pin GoAccess v1.10.2"
+grep -qx 'GOACCESS_VERSION=v1\.11' "$ROOT/packaging/runtime-versions.env" || fail "runtime versions must pin GoAccess v1.11"
 grep -q 'allinurl/goaccess' "$ROOT/scripts/update-runtime-versions.sh" || fail "update-runtime-versions must refresh GoAccess"
 grep -q 'GOACCESS_VERSION' "$ROOT/scripts/fetch-runtimes.sh" || fail "fetch-runtimes must use GOACCESS_VERSION"
 grep -q 'goaccess_ver=' "$ROOT/scripts/check-runtime-versions.sh" || fail "runtime checks must verify GoAccess"

@@ -1,3 +1,12 @@
+reverse-bin (0.0.7-1) unstable; urgency=high
+
+  * fix(packaging): bind the internal ACME authorization endpoint to IPv4 loopback.
+  * fix(utils): bind the local app runner to IPv4 loopback.
+  * test(packaging): verify internal Caddy listeners are loopback-only.
+  * chore(packaging): refresh uv, landrun, Deno, SOPS, and GoAccess.
+
+ -- Taras Glek <taras@glek.net>  Fri, 21 Aug 2026 16:06:55 +0300
+
 reverse-bin (0.0.6-1) unstable; urgency=high
 
   * fix(caddy): create and clean up managed static-app Unix socket directories.
