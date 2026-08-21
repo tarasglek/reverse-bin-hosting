@@ -18,6 +18,8 @@ fail() {
 grep -q 'make update-runtime-versions' "$WORKFLOW" || fail "CI must run runtime version updater"
 grep -q 'git diff --exit-code packaging/runtime-versions.env' "$WORKFLOW" || fail "CI must fail when runtime version updater changes lockfile"
 grep -q 'scripts/integration-deb.sh' "$WORKFLOW" || fail "CI must test the installed Debian package"
+# Keep automatic refreshes from selecting landrun versions that parse child flags as their own.
+grep -q '^landrun_version=v0\.1\.14$' "$UPDATER" || fail "runtime updater must keep the detector-compatible landrun pin"
 grep -q 'websocat_version=' "$UPDATER" || fail "runtime updater must refresh WEBSOCAT_VERSION"
 grep -q 'WEBSOCAT_VERSION=${websocat_version}' "$UPDATER" || fail "runtime updater must write WEBSOCAT_VERSION"
 grep -q 'make update-runtime-versions' "$PROCESS" || fail "release process must document runtime update gate"

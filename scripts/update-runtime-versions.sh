@@ -21,7 +21,8 @@ latest_github_tag() {
 
 caddy_plugin_version=$(latest_github_release tarasglek/caddy-reverse-bin)
 uv_version=$(latest_github_release astral-sh/uv)
-landrun_version=$(latest_github_release zouuup/landrun)
+# v0.1.15+ parse child flags as landrun flags unless the detector adds a second -- delimiter.
+landrun_version=v0.1.14
 detector_version=$(latest_github_release tarasglek/reverse-bin-detector)
 deno_version=$(latest_github_release denoland/deno)
 sops_version=$(latest_github_release getsops/sops)
