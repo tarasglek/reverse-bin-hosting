@@ -173,6 +173,7 @@ App isolation checks:
 - [x] App cannot read `/run/user` in the packaged service. Verified from live `logs` GoAccess app namespace on 2026-07-05.
 - [x] App cannot read `/var/lib/reverse-bin/keys/age.key`. Verified from live `logs` GoAccess app namespace plus app Landlock policy on 2026-07-05.
 - [x] App cannot write outside its `data/` directory, except that static apps can write their exact managed runtime socket directory. App `data/` isolation was verified from the live `logs` GoAccess namespace plus Landlock policy on 2026-07-05; static runtime directory scope is covered by detector policy tests.
+- [ ] Landlock cannot deny metadata syscalls (`chmod`, `chown`, `utimensat`, `stat`). An app in the shared service UID can `chmod a=rw` a `600` file it owns even outside its allowlist, permanently loosening it host-wide. Blocked by mount-based sandboxes (read-only binds / private tmpfs → `EROFS`), not by Landlock. Host key perms must be enforced outside the app sandbox (`ProtectSystem=strict`, `NoNewPrivileges`, `ReadWritePaths`).
 - [x] App cannot see host PIDs through `/proc`.
 - [x] App cannot see sibling app PIDs through `/proc`.
 - [ ] App cannot bind unassigned TCP ports.

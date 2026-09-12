@@ -214,6 +214,29 @@ sops --encrypt --input-type dotenv --output-type json --filename-override secret
 
 At runtime, systemd sets `SOPS_AGE_KEY_FILE=/var/lib/reverse-bin/keys/age.key`. `reverse-bin-detector` decrypts `secrets.enc.json` in memory with bundled `/usr/lib/reverse-bin/sops`, asks SOPS to output dotenv, and passes parsed keys to the child app. The private key stays outside app directories; child apps only receive `SOPS_AGE_KEY_FILE` if the app env explicitly defines it.
 
+## Interactive sandbox shells
+
+`reverse-bin-detector --as-app APP_DIR -- COMMAND [ARGS...]` runs one-off commands with the exact environment, working directory, runtime sandbox, and namespace policy the detector generates for an app — the same isolation production requests get. Useful for migration scripts, unit tests, cron jobs, REPLs, and interactive shells.
+
+To drop into a shell as a packaged app (example: the `logs` GoAccess dashboard), preserving the production identity and PATH:
+
+```sh
+RBLIB=/var/lib/reverse-bin
+RBBIN=/usr/lib/reverse-bin
+sudo -u reverse-bin PATH=$RBBIN:/usr/bin:/bin \
+  SOPS_AGE_KEY_FILE=$RBLIB/keys/age.key \
+  $RBBIN/reverse-bin-detector \
+  --as-app $RBLIB/apps/logs -- /bin/bash -i
+```
+
+Notes:
+
+- `PATH` must include `/usr/lib/reverse-bin` or `unshare` cannot find `landrun`.
+- `SOPS_AGE_KEY_FILE` must be exported or apps with `secrets.enc.json` fail with "Failed to get the data key".
+- `HOME` defaults to `<app>/data`; writable paths are limited to the app's approved `data/` directory.
+- The app's Landlock policy is applied: source is read-only, secrets stay outside the allowlist, and executable apps get network access.
+- Landlock does not mediate metadata syscalls (`chmod`, `chown`, `utimensat`, `stat`); an app under the shared service UID can loosen permissions on files it owns even outside its allowlist. See [`SECURITY-POSTURE.md`](SECURITY-POSTURE.md). Do not run untrusted code under a privileged UID.
+
 ## Credits and inspiration
 
 - Smallweb for simple app-directory hosting and the Deno runtime shape.
