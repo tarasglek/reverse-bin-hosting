@@ -155,12 +155,19 @@ Prefer debugging through the same public app URL users hit. Direct app access by
    sudo journalctl -u reverse-bin.service --since '5 minutes ago' --no-pager
    sudo tail -f /var/lib/reverse-bin/apps/logs/caddy-logs/access.log
    ```
-3. If the app is running but proxy behavior is wrong, check nested Caddy host matchers and health routes. Empty `200` responses often mean an inner Caddy used `http://{$REVERSE_BIN_HOST}:{$REVERSE_BIN_PORT}` instead of `http://:{$REVERSE_BIN_PORT}` plus `bind {$REVERSE_BIN_HOST}`.
-4. For WebSockets, verify upgrade through the public app domain:
+3. Debug app commands as the `reverse-bin` user with `reverse-bin-detector --as-app APP_DIR -- COMMAND`. This uses the same environment variables, working directory, permissions, and sandbox as a production launch. Running `deno`, Python, or the app directly can hide production-only failures. For packaged installs:
+   ```sh
+   sudo -u reverse-bin env PATH=/usr/lib/reverse-bin:/usr/bin:/bin \
+     SOPS_AGE_KEY_FILE=/var/lib/reverse-bin/keys/age.key \
+     /usr/lib/reverse-bin/reverse-bin-detector \
+     --as-app /var/lib/reverse-bin/apps/my-app -- deno check main.ts
+   ```
+4. If the app is running but proxy behavior is wrong, check nested Caddy host matchers and health routes. Empty `200` responses often mean an inner Caddy used `http://{$REVERSE_BIN_HOST}:{$REVERSE_BIN_PORT}` instead of `http://:{$REVERSE_BIN_PORT}` plus `bind {$REVERSE_BIN_HOST}`.
+5. For WebSockets, verify upgrade through the public app domain:
    ```sh
    curl -i --http1.1 -H 'Connection: Upgrade' -H 'Upgrade: websocket' \
      -H 'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==' \
      -H 'Sec-WebSocket-Version: 13' https://my-app.$DOMAIN_SUFFIX/ws
    ```
    Expected: `101 Switching Protocols`.
-5. Last resort only: reproduce locally through the detector/reverse-bin path, not by manually running the app. Use `utils/run-reverse-bin-app.sh APP_ROOT/my-app` or the packaged equivalent so `reverse-bin-detector`, sandbox policy, env loading, health checks, and proxy supervision are still involved. This is comparable to production when run against the same app tree, especially a symlink/bind/UID-remapped mount of `APP_ROOT`. Only after that, inspect the spawned inner port/socket from logs if you must isolate an app bug.
+6. If a full local proxy reproduction is needed, use `utils/run-reverse-bin-app.sh APP_ROOT/my-app` or the packaged equivalent to include detector, sandbox, env loading, health checks, and proxy supervision. Only after that, inspect the spawned inner port/socket from logs if you must isolate an app bug.
