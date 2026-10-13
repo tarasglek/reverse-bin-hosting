@@ -130,6 +130,7 @@ Landlock also enforces filesystem access: app source is read/execute-only, non-s
 - [x] Packaged HTTP-only Caddy mode binds only `127.0.0.1:${REVERSE_BIN_HTTP_PORT:-7777}`.
 - [x] ACME mode uses Caddy-managed HTTPS with on-demand TLS and an ask endpoint restricted to the configured domain suffix.
 - [x] Apps share the host network namespace intentionally.
+- [x] Packaged Caddyfiles set `admin off`; otherwise any executable app could reach `127.0.0.1:2019` and load a config that runs unsandboxed commands as `reverse-bin`.
 - [x] Static website apps use nested `reverse-bin-caddy file-server` over a Unix socket under `/run/reverse-bin/static-apps/app-<hash>/`.
 - [x] Static website apps require no TCP bind permission in their runtime sandbox.
 - [x] Static website apps require no outbound network access for normal serving.
@@ -179,6 +180,17 @@ App isolation checks:
 - [ ] App cannot bind unassigned TCP ports.
 - [x] Static apps cannot make outbound network connections.
 - [x] Executable apps are explicitly allowed outbound network connections.
+
+## Per-app SSH sessions
+
+A key in `/var/lib/reverse-bin/home/.ssh/authorized_keys` grants a session inside one app's runtime sandbox, with that app's environment and decrypted secrets. It is an app sandbox under the shared `reverse-bin` UID, not a user or tenant boundary: anything that escapes to unsandboxed `reverse-bin` code can read every app's secrets.
+
+- [x] sshd binds each key to an app with `command="/usr/lib/reverse-bin/rb-ssh APP"`; `rb-ssh` is the login shell and refuses every other invocation (key lines without `command=`, `su`, `sudo -i`).
+- [x] `/etc/ssh/sshd_config.d/reverse-bin.conf` limits the user to public keys and disables forwarding.
+- [x] sftp/scp are refused; source stays read-only and only app `data/` is writable.
+- [x] Sessions cannot outlive the SSH connection: PTY hangup or sshd session exit kills the sandbox.
+- [x] Sandboxed processes cannot write `authorized_keys` (outside the Landlock allowlist).
+- [ ] SSH sessions run outside the systemd unit, so unit hardening and cgroup limits do not apply; Landlock and namespaces still do.
 
 ## Non-goals for minimal posture
 

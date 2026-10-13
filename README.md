@@ -237,6 +237,31 @@ Notes:
 - The app's Landlock policy is applied: source is read-only, secrets stay outside the allowlist, and executable apps get network access.
 - Landlock does not mediate metadata syscalls (`chmod`, `chown`, `utimensat`, `stat`); an app under the shared service UID can loosen permissions on files it owns even outside its allowlist. See [`SECURITY-POSTURE.md`](SECURITY-POSTURE.md). Do not run untrusted code under a privileged UID.
 
+### Per-app SSH keys
+
+Give someone a shell in one app's sandbox without server access:
+
+```sh
+ssh -i todo.pem reverse-bin@host                      # interactive bash in apps/todo
+ssh -i todo.pem reverse-bin@host 'deno task migrate'  # one command, exit status passed back
+```
+
+Each key names its app in `/var/lib/reverse-bin/home/.ssh/authorized_keys`:
+
+```sh
+APP=todo
+printf 'restrict,pty,command="/usr/lib/reverse-bin/rb-ssh %s" %s\n' "$APP" "$(cat todo.pub)" |
+  sudo -u reverse-bin tee -a /var/lib/reverse-bin/home/.ssh/authorized_keys
+```
+
+The package makes `/usr/lib/reverse-bin/rb-ssh` the `reverse-bin` login shell and installs `/etc/ssh/sshd_config.d/reverse-bin.conf` (public keys only, no forwarding). Reload sshd after installing: `sudo systemctl reload ssh`.
+
+- Every line must use `command="/usr/lib/reverse-bin/rb-ssh APP"`. A line without it gets a refusal, not a shell.
+- The session has the app's production environment, including decrypted secrets. Treat an app key like that app's deploy credentials.
+- sftp/scp are refused. Copy into `data/` with `ssh ... 'cat > data/file' < file` or `tar`.
+- Closing the connection kills everything the session started.
+- `sudo -u reverse-bin /usr/lib/reverse-bin/rb-ssh APP` gives operators the same shell without a key.
+
 ## Credits and inspiration
 
 - Smallweb for simple app-directory hosting and the Deno runtime shape.
