@@ -36,6 +36,21 @@ print("\n".join(listeners))
     [ "$got" = "$want" ] || fail "$config port $port listeners = [$got], want exactly [$want]"
 }
 
+assert_admin_off() {
+    config=$1
+
+    # Sandboxed apps share the host loopback; the admin API would let them reconfigure Caddy.
+    OPS_EMAIL=ops@example.test DOMAIN_SUFFIX=example.test REVERSE_BIN_HTTP_PORT=7777 \
+        "$CADDY_BIN" adapt --adapter caddyfile --config "$config" 2>/dev/null |
+        python3 -c '
+import json
+import sys
+
+config = json.load(sys.stdin)
+sys.exit(0 if config.get("admin", {}).get("disabled") is True else 1)
+' || fail "$config must disable the Caddy admin API (admin off)"
+}
+
 # Verify the generated development Caddyfile also binds its default port to loopback.
 python3 - "$ROOT/utils/run-reverse-bin-app.sh" <<'PY'
 import pathlib
@@ -50,5 +65,7 @@ PY
 
 assert_port_listener "$ROOT/packaging/debian/Caddyfile.acme" 9080 127.0.0.1:9080
 assert_port_listener "$ROOT/packaging/debian/Caddyfile.http-only" 7777 127.0.0.1:7777
+assert_admin_off "$ROOT/packaging/debian/Caddyfile.acme"
+assert_admin_off "$ROOT/packaging/debian/Caddyfile.http-only"
 
-echo "packaged Caddy listeners are loopback-only"
+echo "packaged Caddy listeners are loopback-only and admin API is off"

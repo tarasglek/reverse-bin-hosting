@@ -1,4 +1,6 @@
 {
+	# Sandboxed apps share the host loopback; never expose the admin API to them.
+	admin off
 	# HTTP-only mode is intended for Cloudflare/local proxy frontends.
 	# Trust the local proxy's forwarded headers so JSON access logs record
 	# the real visitor in request.client_ip for GoAccess.

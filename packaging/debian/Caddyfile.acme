@@ -1,4 +1,6 @@
 {
+	# Sandboxed apps share the host loopback; never expose the admin API to them.
+	admin off
 	email {$OPS_EMAIL}
 	# ACME mode is intended for directly exposed HTTPS with on-demand TLS.
 	# Caddy by default will not trust local proxy-forwarded headers (for logging).
