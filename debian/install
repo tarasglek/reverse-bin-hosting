@@ -13,6 +13,7 @@ packaging/debian/Caddyfile.acme etc/reverse-bin/
 packaging/debian/Caddyfile.http-only etc/reverse-bin/
 packaging/debian/reverse-bin etc/default/
 packaging/debian/reverse-bin.conf usr/lib/tmpfiles.d/
+packaging/debian/sshd_config.d/reverse-bin.conf etc/ssh/sshd_config.d/
 packaging/debian/logs-app/.env usr/share/reverse-bin/logs-app/
 packaging/debian/logs-app/Caddyfile usr/share/reverse-bin/logs-app/
 packaging/debian/logs-app/setup.sh usr/share/reverse-bin/logs-app/

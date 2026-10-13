@@ -2,6 +2,16 @@
 set -e
 
 case "$1" in
+	remove|purge)
+		# rb-ssh is gone; do not leave the service user with a missing login shell.
+		remove-shell /usr/lib/reverse-bin/rb-ssh
+		if [ "$(getent passwd reverse-bin | cut -d: -f7)" = /usr/lib/reverse-bin/rb-ssh ]; then
+			usermod -s /usr/sbin/nologin reverse-bin
+		fi
+		;;
+esac
+
+case "$1" in
 	purge)
 		rm -rf /var/lib/reverse-bin
 		;;
