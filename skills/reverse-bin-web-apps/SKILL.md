@@ -25,6 +25,8 @@ Reverse-bin aims to be runtime-neutral: any well-behaved app can work if it foll
 
 For new apps, prefer a self-contained app directory with its own `.git` repository so the app can be deployed with `git push`. Set up the bare/deploy repo so pushes unpack or check out into the reverse-bin app directory.
 
+Prefer developing on `main` in the live app directory; use git to roll back if needed. When testing needs different environment variables or changes unsafe for production, use a sibling git worktree at `APP_ROOT/<app>-<task>-worktree`, with its own test environment.
+
 Most ergonomic current defaults:
 
 - Deno app with `export default` entrypoint; detector runs discovered Deno apps in watch mode, so source edits restart the app.
@@ -144,7 +146,7 @@ Login user is `admin`; setup stores the password in `APP_ROOT/logs/.logs-dashboa
 
 ## Debug Checklist
 
-Prefer debugging through the same public app URL users hit. Direct app access bypasses reverse-bin behavior and should be a last resort.
+Develop and test through the public HTTPS app URL by default, including E2E. Use local tests only when no public-path option exists; explain why, and never count them as deployed-app acceptance. A public failure is a blocker to diagnose, not a reason to switch to localhost.
 
 1. Test the public app domain:
    ```sh
