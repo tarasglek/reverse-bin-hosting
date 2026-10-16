@@ -1,3 +1,12 @@
+reverse-bin (0.0.8-1) unstable; urgency=high
+
+  * feat(ssh): per-app SSH keys into app sandboxes via the rb-ssh login shell.
+  * fix(caddy): disable the admin API in packaged configs.
+  * build(runtime): bump reverse-bin-detector to v0.1.14.
+  * chore(packaging): refresh uv, Deno, and GoAccess.
+
+ -- Taras Glek <taras@glek.net>  Fri, 16 Oct 2026 21:25:17 +0300
+
 reverse-bin (0.0.7-1) unstable; urgency=high
 
   * fix(packaging): bind the internal ACME authorization endpoint to IPv4 loopback.
