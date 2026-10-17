@@ -1,3 +1,10 @@
+reverse-bin (0.0.10-1) unstable; urgency=medium
+
+  * feat(runtime): bump reverse-bin-detector to v0.1.16 and pass each app its canonical public URL.
+  * refactor(logs): derive the GoAccess WebSocket URL from REVERSE_BIN_PUBLIC_HOST.
+
+ -- Taras Glek <taras@glek.net>  Sat, 17 Oct 2026 10:27:51 +0300
+
 reverse-bin (0.0.9-1) unstable; urgency=high
 
   * fix(runtime): bump reverse-bin-detector to v0.1.15 so apps without data/ run read-only.
