@@ -5,6 +5,7 @@ PACKAGE=${1:-}
 PORT=${REVERSE_BIN_TEST_PORT:-17777}
 STATIC_MARKER=reverse-bin-static-integration-ok
 EXEC_MARKER=reverse-bin-executable-integration-ok
+READONLY_MARKER=reverse-bin-readonly-integration-ok
 
 if [ "$(id -u)" -ne 0 ]; then
     echo "error: integration-deb.sh must run as root" >&2
@@ -76,6 +77,12 @@ PY
 chown reverse-bin:reverse-bin /var/lib/reverse-bin/apps/exec/main.py
 chmod 0755 /var/lib/reverse-bin/apps/exec/main.py
 
+# An app without data/ must run read-only, not be refused (detector v0.1.14 regression).
+install -d -o reverse-bin -g reverse-bin /var/lib/reverse-bin/apps/readonly
+printf '%s\n' "$READONLY_MARKER" > /var/lib/reverse-bin/apps/readonly/index.html
+printf '%s\n' 'REVERSE_BIN_COMMAND=exec python3 -m http.server --bind "$REVERSE_BIN_HOST" "$REVERSE_BIN_PORT"' > /var/lib/reverse-bin/apps/readonly/.env
+chown reverse-bin:reverse-bin /var/lib/reverse-bin/apps/readonly/index.html /var/lib/reverse-bin/apps/readonly/.env
+
 systemctl restart reverse-bin.service
 systemctl is-active --quiet reverse-bin.service
 
@@ -101,6 +108,16 @@ socket_count=$(find /run/reverse-bin/static-apps -type s -name reverse-bin.sock 
 exec_body=$(request exec.example.test)
 [ "$exec_body" = "$EXEC_MARKER" ] || {
     echo "error: executable route returned unexpected body: $exec_body" >&2
+    exit 1
+}
+
+readonly_body=$(request readonly.example.test)
+[ "$readonly_body" = "$READONLY_MARKER" ] || {
+    echo "error: app without data/ returned unexpected body: $readonly_body" >&2
+    exit 1
+}
+[ ! -e /var/lib/reverse-bin/apps/readonly/data ] || {
+    echo "error: app without data/ gained a data directory" >&2
     exit 1
 }
 
