@@ -1,3 +1,10 @@
+reverse-bin (0.0.9-1) unstable; urgency=high
+
+  * fix(runtime): bump reverse-bin-detector to v0.1.15 so apps without data/ run read-only.
+  * test(packaging): serve an app without data/ in the deb integration test.
+
+ -- Taras Glek <taras@glek.net>  Sat, 17 Oct 2026 09:44:26 +0300
+
 reverse-bin (0.0.8-1) unstable; urgency=high
 
   * feat(ssh): per-app SSH keys into app sandboxes via the rb-ssh login shell.
