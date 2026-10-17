@@ -67,6 +67,8 @@ REVERSE_BIN_HEALTH_PATH=/health
 
 `launch.sh` must use `data/` for writable state. Prefer Unix sockets when the app/runtime supports them; otherwise bind TCP to `$REVERSE_BIN_HOST:$REVERSE_BIN_PORT`.
 
+Never hard-code the app's domain. Use `$REVERSE_BIN_PUBLIC_URL` (for example `https://my-app.$DOMAIN_SUFFIX`) and `$REVERSE_BIN_PUBLIC_HOST` for CSRF trusted origins, allowed hosts, OAuth redirect URIs, and absolute links.
+
 ## Nested Caddy Pattern
 
 Use this when an app needs static files plus proxy routes:

@@ -18,7 +18,7 @@ Reverse-bin’s security goal is to protect the host from apps and apps from eac
 - The app runs as a subprocess behind a local TCP port or Unix socket. Finding available HTTP ports is race-prone, so Unix sockets are preferred where supported. Deno pull request: https://github.com/denoland/deno/pull/32094
 - Static `index.html` and `dist/index.html` apps are served by nested Caddy over `/run/reverse-bin/static-apps/app-<hash>/reverse-bin.sock`. Static apps never listen on TCP; TCP listener environment configuration is rejected.
 - Caddy/reverse-bin proxies public HTTP traffic to that local app subprocess.
-- Reverse-bin injects runtime environment such as `REVERSE_BIN_HOST`, `REVERSE_BIN_PORT`, and `HOME`.
+- Reverse-bin injects runtime environment such as `REVERSE_BIN_HOST`, `REVERSE_BIN_PORT`, `REVERSE_BIN_PUBLIC_URL`, `REVERSE_BIN_PUBLIC_HOST`, and `HOME`.
 - `HOME` is set to `/var/lib/reverse-bin/apps/<app-name>/data` when the app does not define `HOME` itself.
 - App runtime state should live under `/var/lib/reverse-bin/apps/<app-name>/data`.
 - Apps run inside a `landrun` sandbox with read access to app source and required runtime/system paths. Executable apps receive read-write access to app `data/` when present, read-only `/sys`, and unrestricted networking. Static apps receive only their managed runtime socket directory as writable and no network access.
@@ -157,6 +157,7 @@ REVERSE_BIN_HEALTH_STATUS=401
 - For TCP command apps, blank `REVERSE_BIN_PORT=` asks the detector to allocate a free TCP port and inject the resolved value into the child environment.
 - For TCP command apps, missing `REVERSE_BIN_HOST` defaults to `127.0.0.1`.
 - TCP app launch scripts should bind to `REVERSE_BIN_HOST` and `REVERSE_BIN_PORT`.
+- `REVERSE_BIN_PUBLIC_URL` is the app's canonical public origin, such as `https://post.example.com` (the apex domain for the `www` app), and `REVERSE_BIN_PUBLIC_HOST` is its hostname. Use them for CSRF trusted origins, allowed hosts, OAuth redirect URIs, and absolute links instead of hard-coding the domain. Setting either in the app `.env` overrides the injected value.
 - App launch scripts may use packaged `uv` directly; it is available on the reverse-bin service `PATH`.
 - `HOME` defaults to app `data/`, so tools that respect `HOME` can keep runtime state there. If a tool uses separate cache/data variables, set them explicitly in `.env` or `launch.sh`.
 - `REVERSE_BIN_HEALTH_STATUS` is optional and enables exact-status health checks like registry `/v2/` returning `401`.
