@@ -24,14 +24,14 @@ trap cleanup EXIT INT TERM
 cp -a "$APP_SRC/." "$TMP/"
 cd "$TMP"
 CUSTOM_PASSWORD='user-chosen-test-password'
-PATH="$ROOT/build:$PATH" DOMAIN_SUFFIX=example.test ./setup.sh "$CUSTOM_PASSWORD" > setup.out
+PATH="$ROOT/build:$PATH" ./setup.sh "$CUSTOM_PASSWORD" > setup.out
 [ -f .logs-dashboard-password ] || { echo "password file missing" >&2; exit 1; }
 [ "$(tr -d '\r\n' < .logs-dashboard-password)" = "$CUSTOM_PASSWORD" ] || { echo "custom password not stored" >&2; exit 1; }
 grep -q 'GoAccess dashboard initializing' data/html/index.html || { echo "setup placeholder missing" >&2; exit 1; }
 grep -q '^LOGS_BASIC_AUTH_HASH=' .env || { echo "auth hash missing" >&2; exit 1; }
 grep -q 'user: admin' setup.out || { echo "setup output missing admin" >&2; exit 1; }
 grep -q 'cat .*/.logs-dashboard-password' setup.out || { echo "setup output missing password source" >&2; exit 1; }
-grep -q '^LOGS_WS_URL=logs.example.test/ws' .env || { echo "LOGS_WS_URL missing" >&2; exit 1; }
+! grep -q '^LOGS_WS_URL=' .env || { echo "setup.sh must not write LOGS_WS_URL" >&2; exit 1; }
 
 PORT=$(python3 - <<'PY'
 import socket
@@ -42,7 +42,6 @@ s.close()
 PY
 )
 HASH=$(awk -F= '/^LOGS_BASIC_AUTH_HASH=/{print $2}' .env)
-LOGS_WS_URL=$(awk -F= '/^LOGS_WS_URL=/{print $2}' .env)
 LOGS_WS_PORT=$(awk -F= '/^LOGS_WS_PORT=/{print $2}' .env)
 PASSWORD=$(tr -d '\r\n' < .logs-dashboard-password)
 AUTH=$(printf 'admin:%s' "$PASSWORD" | base64 | tr -d '\n')
@@ -50,7 +49,7 @@ AUTH=$(printf 'admin:%s' "$PASSWORD" | base64 | tr -d '\n')
 REVERSE_BIN_HOST=127.0.0.1 \
 REVERSE_BIN_PORT="$PORT" \
 LOGS_BASIC_AUTH_HASH="$HASH" \
-LOGS_WS_URL="$LOGS_WS_URL" \
+REVERSE_BIN_PUBLIC_HOST=logs.example.test \
 LOGS_WS_PORT="$LOGS_WS_PORT" \
 GOACCESS_BIN="$GOACCESS" \
 "$CADDY" run --config Caddyfile --adapter caddyfile > caddy.out 2>&1 &
@@ -99,6 +98,7 @@ for _ in 1 2 3 4 5; do
 done
 [ -s data/html/index.html ] || { echo "GoAccess did not write data/html/index.html" >&2; cat "$WS_ERR" >&2; cat caddy.out >&2; exit 1; }
 grep -q '<!DOCTYPE html>' data/html/index.html || { echo "GoAccess did not generate HTML" >&2; cat "$WS_ERR" >&2; cat caddy.out >&2; exit 1; }
+grep -q 'logs.example.test/ws' data/html/index.html || { echo "GoAccess HTML missing WebSocket URL from REVERSE_BIN_PUBLIC_HOST" >&2; exit 1; }
 code=$(curl -sS -u "admin:$PASSWORD" -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PORT/")
 [ "$code" = 200 ] || { echo "/ with auth after GoAccess got $code" >&2; exit 1; }
 
