@@ -1,3 +1,10 @@
+reverse-bin (0.0.11-1) unstable; urgency=medium
+
+  * feat(runtime): bump reverse-bin-detector to v0.1.17; apps get only REVERSE_BIN_PUBLIC_HOST and are served as https://.
+  * feat(utils): local runner serves https://<app>.localhost with Caddy's local CA.
+
+ -- Taras Glek <taras@glek.net>  Sat, 17 Oct 2026 10:54:11 +0300
+
 reverse-bin (0.0.10-1) unstable; urgency=medium
 
   * feat(runtime): bump reverse-bin-detector to v0.1.16 and pass each app its canonical public URL.
