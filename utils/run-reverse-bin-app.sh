@@ -47,7 +47,7 @@ cat > "$TEMP_CADDYFILE" <<EOF
 http://127.0.0.1:$HTTP_PORT {
 	bind 127.0.0.1
 	reverse-bin {
-		dynamic_proxy_detector $REPO_ROOT/build/reverse-bin-detector $APP_DIR
+		dynamic_proxy_detector $REPO_ROOT/build/reverse-bin-detector --public-url=http://127.0.0.1:$HTTP_PORT $APP_DIR
 		health_check HEAD /
 		idle_timeout_ms 300000
 		health_timeout_ms 15000

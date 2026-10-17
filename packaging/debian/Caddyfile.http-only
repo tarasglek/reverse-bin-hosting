@@ -20,18 +20,21 @@ http://:{$REVERSE_BIN_HTTP_PORT:7777} {
 		format json
 	}
 
-	# Map request host to the app directory consumed by reverse-bin-detector.
+	# Map request host to the app directory and canonical public URL consumed by reverse-bin-detector.
 	# The apex domain has no subdomain label, so serve it from the conventional "www" app.
 	# Single-label subdomains map to apps with the same name: post.coolness.fyi -> apps/post.
-	map {host} {reverse_bin_app_dir} {
-		{$DOMAIN_SUFFIX} /var/lib/reverse-bin/apps/www
-		default /var/lib/reverse-bin/apps/{http.request.host.labels.2}
+	# reverse-bin keys backend processes on the expanded detector args, so aliases of one app
+	# (apex and www) must map to the same URL or each alias starts its own backend.
+	map {host} {reverse_bin_app_dir} {reverse_bin_public_url} {
+		{$DOMAIN_SUFFIX} /var/lib/reverse-bin/apps/www https://{$DOMAIN_SUFFIX}
+		www.{$DOMAIN_SUFFIX} /var/lib/reverse-bin/apps/www https://{$DOMAIN_SUFFIX}
+		default /var/lib/reverse-bin/apps/{http.request.host.labels.2} https://{http.request.host.labels.2}.{$DOMAIN_SUFFIX}
 	}
 
 	@app host {$DOMAIN_SUFFIX} *.{$DOMAIN_SUFFIX}
 	handle @app {
 		reverse-bin * {
-			dynamic_proxy_detector "/usr/lib/reverse-bin/reverse-bin-detector" "{reverse_bin_app_dir}"
+			dynamic_proxy_detector "/usr/lib/reverse-bin/reverse-bin-detector" "--public-url={reverse_bin_public_url}" "{reverse_bin_app_dir}"
 			health_check HEAD /
 			idle_timeout_ms {$REVERSE_BIN_IDLE_TIMEOUT_MS:300000}
 			health_timeout_ms {$REVERSE_BIN_HEALTH_TIMEOUT_MS:15000}
