@@ -1,3 +1,9 @@
+reverse-bin (0.0.12-1) unstable; urgency=medium
+
+  * fix(runtime): bump reverse-bin-detector to v0.1.18; sandboxed apps can read a symlinked /etc/resolv.conf and resolve DNS.
+
+ -- Taras Glek <taras@glek.net>  Mon, 19 Oct 2026 21:10:18 +0300
+
 reverse-bin (0.0.11-1) unstable; urgency=medium
 
   * feat(runtime): bump reverse-bin-detector to v0.1.17; apps get only REVERSE_BIN_PUBLIC_HOST and are served as https://.
