@@ -76,7 +76,7 @@ Per-app host UIDs are potential defense-in-depth only. They would not add protec
 
 Current detector policy for launched apps:
 
-- [x] App source is read/execute-only in the Landlock sandbox (`--rox <app-dir>`).
+- [x] App source is read/execute-only in the Landlock sandbox (`--rox <app-dir>`). Only `--as-app-dev` and rb-ssh sessions get it read/write (`--rwx`); a running app cannot modify its own code.
 - [x] Non-static app `data/` is read/write when present (`--rw <app-dir>/data`).
 - [x] Static apps receive read/write access only to `/run/reverse-bin/static-apps/app-<hash>/` for their managed socket; app `data/` remains read-only with the rest of the source tree.
 - [x] `HOME` defaults to app `data/` when the app does not define `HOME`.
@@ -183,11 +183,11 @@ App isolation checks:
 
 ## Per-app SSH sessions
 
-A key in `/var/lib/reverse-bin/home/.ssh/authorized_keys` grants a session inside one app's runtime sandbox, with that app's environment and decrypted secrets. It is an app sandbox under the shared `reverse-bin` UID, not a user or tenant boundary: anything that escapes to unsandboxed `reverse-bin` code can read every app's secrets.
+A key in `/var/lib/reverse-bin/home/.ssh/authorized_keys` grants a development session inside one app's runtime sandbox: that app's environment, decrypted secrets, and writable source (`--as-app-dev`). It is an app sandbox under the shared `reverse-bin` UID, not a user or tenant boundary: anything that escapes to unsandboxed `reverse-bin` code can read every app's secrets.
 
 - [x] sshd binds each key to an app with `command="/usr/lib/reverse-bin/rb-ssh APP"`; `rb-ssh` is the login shell and refuses every other invocation (key lines without `command=`, `su`, `sudo -i`).
 - [x] `/etc/ssh/sshd_config.d/reverse-bin.conf` limits the user to public keys and disables forwarding.
-- [x] sftp/scp are refused; source stays read-only and only app `data/` is writable.
+- [x] sftp/scp are refused; files arrive via `git push` or ssh+tar. Source edits over SSH are the point of the credential and are visible to the running app immediately (watch-mode runtimes reload).
 - [x] Sessions cannot outlive the SSH connection: PTY hangup or sshd session exit kills the sandbox.
 - [x] Sandboxed processes cannot write `authorized_keys` (outside the Landlock allowlist).
 - [ ] SSH sessions run outside the systemd unit, so unit hardening and cgroup limits do not apply; Landlock and namespaces still do.

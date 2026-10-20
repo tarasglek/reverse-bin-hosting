@@ -95,7 +95,7 @@ Important: do **not** use `http://{$REVERSE_BIN_HOST}:{$REVERSE_BIN_PORT}`. That
 
 ## Writable vs Read-only Paths
 
-- App source is mounted read-only in the sandbox.
+- App source is read-only in the production sandbox. Only `reverse-bin-detector --as-app-dev` and per-app SSH sessions can write it; the running app cannot.
 - For non-static apps, `data/` is writable when present.
 - Static apps receive only their managed `/run/reverse-bin/static-apps/app-<hash>/` socket directory as writable; their app `data/` remains read-only.
 - `HOME` defaults to `APP_ROOT/<app-name>/data` when the app does not define `HOME` itself.
@@ -159,7 +159,7 @@ Develop and test through the public HTTPS app URL by default, including E2E. Use
    sudo journalctl -u reverse-bin.service --since '5 minutes ago' --no-pager
    sudo tail -f /var/lib/reverse-bin/apps/logs/caddy-logs/access.log
    ```
-3. Debug app commands as the `reverse-bin` user with `reverse-bin-detector --as-app APP_DIR -- COMMAND`. This uses the same environment variables, working directory, permissions, and sandbox as a production launch. Running `deno`, Python, or the app directly can hide production-only failures. For packaged installs:
+3. Debug app commands as the `reverse-bin` user with `reverse-bin-detector --as-app APP_DIR -- COMMAND` (production sandbox: same env, cwd, permissions) or `--as-app-dev` when you need to edit source. Running `deno`, Python, or the app directly can hide production-only failures. For packaged installs:
    ```sh
    sudo -u reverse-bin env PATH=/usr/lib/reverse-bin:/usr/bin:/bin \
      SOPS_AGE_KEY_FILE=/var/lib/reverse-bin/keys/age.key \

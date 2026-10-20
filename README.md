@@ -217,30 +217,23 @@ At runtime, systemd sets `SOPS_AGE_KEY_FILE=/var/lib/reverse-bin/keys/age.key`. 
 
 ## Interactive sandbox shells
 
-`reverse-bin-detector --as-app APP_DIR -- COMMAND [ARGS...]` runs one-off commands with the exact environment, working directory, runtime sandbox, and namespace policy the detector generates for an app — the same isolation production requests get. Useful for migration scripts, unit tests, cron jobs, REPLs, and interactive shells.
-
-To drop into a shell as a packaged app (example: the `logs` GoAccess dashboard), preserving the production identity and PATH:
+`reverse-bin-detector --as-app APP_DIR -- COMMAND [ARGS...]` runs a command with the exact environment, working directory, sandbox, and namespaces the detector generates for an app: source read-only, `data/` writable. `--as-app-dev` is the same with the app source writable, for editing. Use `--as-app` for migrations, tests, cron, and reproducing production failures; `--as-app-dev` for development.
 
 ```sh
-RBLIB=/var/lib/reverse-bin
-RBBIN=/usr/lib/reverse-bin
-sudo -u reverse-bin PATH=$RBBIN:/usr/bin:/bin \
-  SOPS_AGE_KEY_FILE=$RBLIB/keys/age.key \
-  $RBBIN/reverse-bin-detector \
-  --as-app $RBLIB/apps/logs -- /bin/bash -i
+sudo -u reverse-bin PATH=/usr/lib/reverse-bin:/usr/bin:/bin \
+  SOPS_AGE_KEY_FILE=/var/lib/reverse-bin/keys/age.key \
+  /usr/lib/reverse-bin/reverse-bin-detector \
+  --as-app-dev /var/lib/reverse-bin/apps/logs -- /bin/bash -i
 ```
-
-Notes:
 
 - `PATH` must include `/usr/lib/reverse-bin` or `unshare` cannot find `landrun`.
 - `SOPS_AGE_KEY_FILE` must be exported or apps with `secrets.enc.json` fail with "Failed to get the data key".
-- `HOME` defaults to `<app>/data`; writable paths are limited to the app's approved `data/` directory.
-- The app's Landlock policy is applied: source is read-only, secrets stay outside the allowlist, and executable apps get network access.
-- Landlock does not mediate metadata syscalls (`chmod`, `chown`, `utimensat`, `stat`); an app under the shared service UID can loosen permissions on files it owns even outside its allowlist. See [`SECURITY-POSTURE.md`](SECURITY-POSTURE.md). Do not run untrusted code under a privileged UID.
+- `HOME` defaults to `<app>/data`. Secrets and keys stay outside the allowlist; executable apps get network access.
+- Landlock does not mediate metadata syscalls (`chmod`, `chown`, `utimensat`, `stat`); see [`SECURITY-POSTURE.md`](SECURITY-POSTURE.md). Do not run untrusted code under a privileged UID.
 
 ### Per-app SSH keys
 
-Give someone a shell in one app's sandbox without server access:
+An SSH key is a development credential for one app: the session runs as `--as-app-dev` with that app's environment, decrypted secrets, and writable source.
 
 ```sh
 ssh -i todo.pem reverse-bin@host                      # interactive bash in apps/todo
@@ -257,11 +250,18 @@ printf 'restrict,pty,command="/usr/lib/reverse-bin/rb-ssh %s" %s\n' "$APP" "$(ca
 
 The package makes `/usr/lib/reverse-bin/rb-ssh` the `reverse-bin` login shell and installs `/etc/ssh/sshd_config.d/reverse-bin.conf` (public keys only, no forwarding). Reload sshd after installing: `sudo systemctl reload ssh`.
 
+Deploy with `git push`. Make the app directory a repository that accepts pushes to its checked-out branch, then push to `.`; the checkout updates in place and watch-mode runtimes such as `deno serve --watch` reload:
+
+```sh
+ssh -i todo.pem reverse-bin@host 'git init -q -b main && git config receive.denyCurrentBranch updateInstead'
+git remote add prod reverse-bin@host:.      # pick the key via ~/.ssh/config or GIT_SSH_COMMAND='ssh -i todo.pem'
+git push prod main
+```
+
 - Every line must use `command="/usr/lib/reverse-bin/rb-ssh APP"`. A line without it gets a refusal, not a shell.
-- The session has the app's production environment, including decrypted secrets. Treat an app key like that app's deploy credentials.
-- sftp/scp are refused. Copy into `data/` with `ssh ... 'cat > data/file' < file` or `tar`.
+- sftp/scp are refused; use `git push`, or `ssh ... 'cat > data/file' < file`, or `tar`.
+- Static apps serve their whole root, including `.git/`; use `dist/index.html` so only `dist/` is served.
 - Closing the connection kills everything the session started.
-- `sudo -u reverse-bin /usr/lib/reverse-bin/rb-ssh APP` gives operators the same shell without a key.
 
 ## Credits and inspiration
 
