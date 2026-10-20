@@ -1,3 +1,10 @@
+reverse-bin (0.0.13-1) unstable; urgency=medium
+
+  * feat(runtime): bump reverse-bin-detector to v0.1.19; per-app SSH sessions can edit app source and deploy with git push.
+  * chore(runtime): refresh uv to 0.13.3.
+
+ -- Taras Glek <taras@glek.net>  Tue, 20 Oct 2026 08:57:37 +0300
+
 reverse-bin (0.0.12-1) unstable; urgency=medium
 
   * fix(runtime): bump reverse-bin-detector to v0.1.18; sandboxed apps can read a symlinked /etc/resolv.conf and resolve DNS.
