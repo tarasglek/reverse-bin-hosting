@@ -8,7 +8,7 @@ include packaging/runtime-versions.env
 # Fixers rewrite the same files; never run targets in parallel.
 .NOTPARALLEL:
 
-.PHONY: build deb tests deps-check deps-latest release-notes clean distclean clean-runtime-cache fetch-runtimes fetch-test-runtimes check-runtime-versions update-runtime-versions smoke-logs-app
+.PHONY: build deb tests deps-check deps-latest vulncheck release-notes clean distclean clean-runtime-cache fetch-runtimes fetch-test-runtimes check-runtime-versions update-runtime-versions smoke-logs-app
 
 build:
 	mkdir -p build
@@ -20,7 +20,8 @@ deb: fetch-runtimes
 	dpkg-buildpackage -us -uc -b
 
 # deps-latest rewrites files; deps-check fails when it did. Run it locally
-# and commit the result.
+# and commit the result. vulncheck needs the built package, so CI runs it
+# after make deb.
 deps-latest: update-runtime-versions
 	go get toolchain@latest && go mod tidy
 	$(PINACT) run -u
@@ -28,6 +29,10 @@ deps-latest: update-runtime-versions
 deps-check: deps-latest
 	@if [ -n "$$(git status --porcelain)" ]; then git status --short; git diff; \
 	echo "error: fixers changed files; commit them" >&2; exit 1; fi
+
+# Run after make deb. Scans the Go binaries we build.
+vulncheck:
+	./scripts/vulncheck-binaries.sh reverse-bin-caddy
 
 # Usage: make release-notes TAG=vX.Y.Z
 release-notes:
