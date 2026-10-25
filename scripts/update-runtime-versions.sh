@@ -9,13 +9,13 @@ trap cleanup EXIT INT TERM
 
 latest_github_release() {
   repo=$1
-  curl -fsSL "https://api.github.com/repos/$repo/releases/latest" \
+  curl -fsSL ${GITHUB_TOKEN:+-H "Authorization: Bearer $GITHUB_TOKEN"} "https://api.github.com/repos/$repo/releases/latest" \
     | python3 -c 'import json,sys; print(json.load(sys.stdin)["tag_name"])'
 }
 
 latest_github_tag() {
   repo=$1
-  curl -fsSL "https://api.github.com/repos/$repo/tags" \
+  curl -fsSL ${GITHUB_TOKEN:+-H "Authorization: Bearer $GITHUB_TOKEN"} "https://api.github.com/repos/$repo/tags" \
     | python3 -c 'import json,sys; print(json.load(sys.stdin)[0]["name"])'
 }
 

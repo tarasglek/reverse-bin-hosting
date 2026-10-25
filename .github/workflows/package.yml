@@ -5,6 +5,9 @@ on:
     branches: [master]
     tags: ['v*']
   pull_request:
+  # Upstream releases and new advisories land without a push.
+  schedule:
+    - cron: "17 6 * * *"
 
 permissions:
   contents: write
@@ -13,9 +16,15 @@ jobs:
   deb:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-go@v5
+      - name: Validate release notes
+        if: startsWith(github.ref, 'refs/tags/')
+        run: make release-notes TAG="$GITHUB_REF_NAME"
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
           cache: false
@@ -28,17 +37,17 @@ jobs:
           echo "$HOME/go/bin" >> "$GITHUB_PATH"
 
       - name: Cache packaged runtimes
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/reverse-bin-hosting/runtimes
           key: runtimes-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('packaging/runtime-versions.env') }}
           restore-keys: |
             runtimes-${{ runner.os }}-${{ runner.arch }}-
 
-      - name: Check bundled runtime versions are current
-        run: |
-          make update-runtime-versions
-          git diff --exit-code packaging/runtime-versions.env
+      - name: Check Go, runtimes, and Actions are latest
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: make deps-check
 
       - name: Build Caddy binary
         run: make build
@@ -65,19 +74,15 @@ jobs:
           ls -lh dist/
 
       - name: Upload package artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: reverse-bin-debian-packages
           path: dist/*
           if-no-files-found: error
 
-      - name: Validate release notes
-        if: startsWith(github.ref, 'refs/tags/')
-        run: ./scripts/check-release-notes.sh "release-notes/$GITHUB_REF_NAME.md"
-
       - name: Attach package artifacts to release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           files: dist/*
           body_path: release-notes/${{ github.ref_name }}.md

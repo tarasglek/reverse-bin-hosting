@@ -1,9 +1,14 @@
 CADDY_BIN ?= ./build/reverse-bin-caddy
 RUNTIME_CACHE_DIR ?= $(or $(XDG_CACHE_HOME),$(HOME)/.cache)/reverse-bin-hosting/runtimes
 export RUNTIME_CACHE_DIR
+PINACT ?= go run github.com/suzuki-shunsuke/pinact/v5/cmd/pinact@latest
+NOTES_MAX_WORDS ?= 100
 include packaging/runtime-versions.env
 
-.PHONY: build deb tests clean distclean clean-runtime-cache fetch-runtimes fetch-test-runtimes check-runtime-versions update-runtime-versions smoke-logs-app
+# Fixers rewrite the same files; never run targets in parallel.
+.NOTPARALLEL:
+
+.PHONY: build deb tests deps-check deps-latest release-notes clean distclean clean-runtime-cache fetch-runtimes fetch-test-runtimes check-runtime-versions update-runtime-versions smoke-logs-app
 
 build:
 	mkdir -p build
@@ -13,6 +18,23 @@ build:
 
 deb: fetch-runtimes
 	dpkg-buildpackage -us -uc -b
+
+# deps-latest rewrites files; deps-check fails when it did. Run it locally
+# and commit the result.
+deps-latest: update-runtime-versions
+	go get toolchain@latest && go mod tidy
+	$(PINACT) run -u
+
+deps-check: deps-latest
+	@if [ -n "$$(git status --porcelain)" ]; then git status --short; git diff; \
+	echo "error: fixers changed files; commit them" >&2; exit 1; fi
+
+# Usage: make release-notes TAG=vX.Y.Z
+release-notes:
+	@test -n "$(TAG)" || { echo "usage: make release-notes TAG=vX.Y.Z" >&2; exit 1; }
+	@f=release-notes/$(TAG).md; [ -s "$$f" ] || { echo "error: $$f missing" >&2; exit 1; }; \
+	n=$$(wc -w < "$$f"); [ "$$n" -le $(NOTES_MAX_WORDS) ] || { \
+	echo "error: $$f: $$n words > $(NOTES_MAX_WORDS). Rewrite caveman: fragments, no filler. Keep what changed, breaking, GO/CVE IDs." >&2; exit 1; }
 
 fetch-runtimes:
 	./scripts/fetch-runtimes.sh
