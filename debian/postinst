@@ -69,7 +69,8 @@ EOF
 			usermod -s /usr/lib/reverse-bin/rb-ssh reverse-bin
 		fi
 
-		if command -v systemctl >/dev/null; then
+		# Only when systemd runs: chroots and containers have systemctl but no bus.
+		if [ -d /run/systemd/system ]; then
 			systemctl daemon-reload
 			if systemctl is-enabled --quiet reverse-bin.service; then
 				systemctl restart reverse-bin.service
