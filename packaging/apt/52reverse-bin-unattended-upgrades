@@ -1,0 +1,5 @@
+// Installed by the reverse-bin package: let unattended-upgrades install new
+// reverse-bin releases, which carry its security fixes.
+Unattended-Upgrade::Origins-Pattern {
+	"origin=reverse-bin,label=reverse-bin";
+};

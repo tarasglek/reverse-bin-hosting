@@ -1,0 +1,6 @@
+# Installed by the reverse-bin package so apt and unattended-upgrades pick up
+# new releases. Delete this file to stop updates.
+Types: deb
+URIs: https://reverse-bin-hosting.coolness.fyi/
+Suites: ./
+Signed-By: /usr/share/keyrings/reverse-bin-archive-keyring.asc

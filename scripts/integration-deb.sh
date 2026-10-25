@@ -28,6 +28,12 @@ trap failure_logs EXIT INT TERM
 
 apt-get install -y "$PACKAGE"
 
+# The package subscribes the host to its signed apt repository and lets
+# unattended-upgrades install new releases.
+grep -q '^URIs: https://reverse-bin-hosting.coolness.fyi/$' /etc/apt/sources.list.d/reverse-bin.sources
+gpg --batch --show-keys /usr/share/keyrings/reverse-bin-archive-keyring.asc >/dev/null
+apt-config dump Unattended-Upgrade::Origins-Pattern | grep -q 'origin=reverse-bin,label=reverse-bin'
+
 cat > /etc/default/reverse-bin <<EOF
 DOMAIN_SUFFIX=example.test
 REVERSE_BIN_CADDYFILE=/etc/reverse-bin/Caddyfile.http-only

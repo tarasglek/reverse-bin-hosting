@@ -57,6 +57,7 @@ The package installs these primary paths:
 - SOPS age recipient: `/var/lib/reverse-bin/keys/age.pub`
 - security posture checklist: [`SECURITY-POSTURE.md`](SECURITY-POSTURE.md)
 - packaged examples: `/usr/share/doc/reverse-bin/examples/`
+- apt source and signing key: `/etc/apt/sources.list.d/reverse-bin.sources`, `/usr/share/keyrings/reverse-bin-archive-keyring.asc`
 
 ## Build the Debian package
 
@@ -77,11 +78,21 @@ This produces a `.deb` in the parent directory.
 
 ## Instructions
 
-1. Install the package:
+1. Install the package from the signed apt repository:
 
 ```sh
-sudo dpkg -i reverse-bin_*_amd64.deb
+repo=https://reverse-bin-hosting.coolness.fyi
+sudo curl -fsSLo /usr/share/keyrings/reverse-bin-archive-keyring.asc "$repo/reverse-bin-archive-keyring.asc"
+sudo curl -fsSLo /etc/apt/sources.list.d/reverse-bin.sources "$repo/reverse-bin.sources"
+sudo apt update
+sudo apt install reverse-bin
 ```
+
+Installing a downloaded `.deb` with `sudo apt install ./reverse-bin_*_amd64.deb` sets up the same repository.
+
+The package subscribes the host to its signed apt repository, so `apt upgrade` installs later releases. With `unattended-upgrades` installed, `/etc/apt/apt.conf.d/52reverse-bin-unattended-upgrades` allows it to install them automatically, and the service restarts on upgrade when it is enabled. The repository is served from GitHub Pages at `https://reverse-bin-hosting.coolness.fyi/`, which `/etc/apt/sources.list.d/reverse-bin.sources` points at, verified with `/usr/share/keyrings/reverse-bin-archive-keyring.asc` (fingerprint `31C9 D6D7 981A 9EDD D77A 81B7 B417 3BB2 A80C 12C0`). Delete the sources file to stop updates.
+
+unattended-upgrades skips an upgrade that would prompt about a locally modified conffile, such as `/etc/default/reverse-bin`, so releases avoid changing packaged conffiles.
 
 2. Configure one mode in `/etc/default/reverse-bin`.
 

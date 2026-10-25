@@ -1,0 +1,2 @@
+# CI decrypt key; private half is the APT_SOPS_AGE_KEY Actions secret.
+age1zlyd0jvryhj88eym6m7g2rjymwnzxzq5vxxp764sa2g5ywddx9cqez8f7g

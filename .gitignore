@@ -23,3 +23,5 @@
 # Python caches
 __pycache__/
 *.pyc
+/dist/
+/site/

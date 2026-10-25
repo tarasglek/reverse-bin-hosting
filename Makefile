@@ -8,7 +8,7 @@ include packaging/runtime-versions.env
 # Fixers rewrite the same files; never run targets in parallel.
 .NOTPARALLEL:
 
-.PHONY: build deb tests deps-check deps-latest vulncheck release-notes clean distclean clean-runtime-cache fetch-runtimes fetch-test-runtimes check-runtime-versions update-runtime-versions smoke-logs-app
+.PHONY: build deb tests deps-check deps-latest vulncheck release-notes apt-repo sync-sops-recipients clean distclean clean-runtime-cache fetch-runtimes fetch-test-runtimes check-runtime-versions update-runtime-versions smoke-logs-app
 
 build:
 	mkdir -p build
@@ -41,6 +41,14 @@ release-notes:
 	n=$$(wc -w < "$$f"); [ "$$n" -le $(NOTES_MAX_WORDS) ] || { \
 	echo "error: $$f: $$n words > $(NOTES_MAX_WORDS). Rewrite caveman: fragments, no filler. Keep what changed, breaking, GO/CVE IDs." >&2; exit 1; }
 
+# Builds site/, the GitHub Pages apt repository, from the packages in dist/.
+apt-repo:
+	rm -rf site
+	./scripts/build-apt-repo.sh site dist/*.deb
+
+sync-sops-recipients:
+	./scripts/sync-sops-recipients.sh
+
 fetch-runtimes:
 	./scripts/fetch-runtimes.sh
 
@@ -66,7 +74,7 @@ tests:
 	./scripts/check-caddy-listeners.sh
 
 clean:
-	rm -rf build debian/.debhelper debian/reverse-bin debian/debhelper-build-stamp debian/files
+	rm -rf build site debian/.debhelper debian/reverse-bin debian/debhelper-build-stamp debian/files
 	rm -f debian/*.debhelper debian/*.debhelper.log debian/*.substvars
 
 distclean: clean
