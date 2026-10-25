@@ -57,7 +57,10 @@ jobs:
       - name: Run tests
         run: make tests
 
+      # fetch checks runtime downloads against GitHub's API on a cache miss.
       - name: Build Debian package
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: make deb
 
       # Fails on fixable vulnerabilities in the Go binaries we build.

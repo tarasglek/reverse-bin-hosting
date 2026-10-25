@@ -16,19 +16,7 @@ CACHE_DIR=${RUNTIME_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/reverse-bin-hosti
 BUILD_DIR="$ROOT/build/test-tools"
 mkdir -p "$BUILD_DIR" "$CACHE_DIR"
 
-fetch() {
-  url=$1
-  out=$2
-  if [ -s "$out" ]; then
-    echo "cache hit $out" >&2
-    return 0
-  fi
-  mkdir -p "$(dirname -- "$out")"
-  tmp="$out.tmp.$$"
-  echo "fetch $url" >&2
-  curl -fsSL "$url" -o "$tmp"
-  mv "$tmp" "$out"
-}
+. "$ROOT/scripts/fetch.sh"
 
 WEBSOCAT_KEY="websocat/${WEBSOCAT_VERSION}/${OS}-${WEBSOCAT_ARCH}"
 WEBSOCAT_BIN="$CACHE_DIR/$WEBSOCAT_KEY/websocat"

@@ -20,19 +20,7 @@ trap cleanup EXIT INT TERM
 
 mkdir -p "$BUILD_DIR" "$CACHE_DIR"
 
-fetch() {
-  url=$1
-  out=$2
-  if [ -s "$out" ]; then
-    echo "cache hit $out" >&2
-    return 0
-  fi
-  mkdir -p "$(dirname -- "$out")"
-  tmp="$out.tmp.$$"
-  echo "fetch $url" >&2
-  curl -fsSL "$url" -o "$tmp"
-  mv "$tmp" "$out"
-}
+. "$ROOT/scripts/fetch.sh"
 
 install_cached() {
   src=$1
@@ -69,11 +57,8 @@ DETECTOR_BIN="$CACHE_DIR/$DETECTOR_KEY/reverse-bin-detector"
 if [ ! -x "$DETECTOR_BIN" ]; then
   DETECTOR_ASSET="reverse-bin-detector_${OS}_${GOARCH}"
   DETECTOR_DIR="$CACHE_DIR/$DETECTOR_KEY"
-  DETECTOR_SUMS="$DETECTOR_DIR/checksums.txt"
   mkdir -p "$DETECTOR_DIR"
   fetch "https://github.com/tarasglek/reverse-bin-detector/releases/download/${REVERSE_BIN_DETECTOR_VERSION}/${DETECTOR_ASSET}" "$DETECTOR_DIR/$DETECTOR_ASSET"
-  fetch "https://github.com/tarasglek/reverse-bin-detector/releases/download/${REVERSE_BIN_DETECTOR_VERSION}/checksums.txt" "$DETECTOR_SUMS"
-  ( cd "$DETECTOR_DIR" && grep "  ${DETECTOR_ASSET}$" checksums.txt | sha256sum -c - )
   install -m 0755 "$DETECTOR_DIR/$DETECTOR_ASSET" "$DETECTOR_BIN"
 fi
 install_cached "$DETECTOR_BIN" reverse-bin-detector
