@@ -54,13 +54,12 @@ if [ ! -x "$UV_BIN" ]; then
 fi
 install_cached "$UV_BIN" uv
 
-# landrun: build once into cache from tagged module source.
-LANDRUN_KEY="landrun/${LANDRUN_VERSION}/${OS}-${GOARCH}"
-LANDRUN_BIN="$CACHE_DIR/$LANDRUN_KEY/landrun"
+# landrun: upstream release binary.
+# Own cache dir: older caches hold source builds under landrun/.
+LANDRUN_BIN="$CACHE_DIR/landrun-release/${LANDRUN_VERSION}/${OS}-${GOARCH}/landrun"
 if [ ! -x "$LANDRUN_BIN" ]; then
-  mkdir -p "$(dirname -- "$LANDRUN_BIN")"
-  GOBIN="$TMP_DIR/bin" GOOS=linux GOARCH="$GOARCH" go install "github.com/zouuup/landrun/cmd/landrun@${LANDRUN_VERSION}"
-  install -m 0755 "$TMP_DIR/bin/landrun" "$LANDRUN_BIN"
+  fetch "https://github.com/zouuup/landrun/releases/download/${LANDRUN_VERSION}/landrun-${OS}-${GOARCH}" "$LANDRUN_BIN"
+  chmod 0755 "$LANDRUN_BIN"
 fi
 install_cached "$LANDRUN_BIN" landrun
 

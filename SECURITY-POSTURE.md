@@ -2,7 +2,7 @@
 
 Reverse-bin runs untrusted or semi-trusted apps from `/var/lib/reverse-bin/apps`. Default posture: minimal host access, explicit app access, layered Linux isolation.
 
-_Last checked against package state on 2026-07-19: `reverse-bin-detector 0.1.12`, package `0.0.5-1`, and `debian/reverse-bin.service`._
+_Last checked against package state on 2026-10-25: `reverse-bin-detector 0.1.21`, `landrun 0.1.17`, package `0.0.14-1`, and `debian/reverse-bin.service`._
 
 ## Goals
 
@@ -56,15 +56,28 @@ Current detector baseline:
 - [x] Uses `--map-current-user` so app namespaces map to the service UID, not root.
 - [x] Treats per-app host UIDs as potential defense-in-depth, not baseline isolation.
 
-Current wrapper shape returned by `reverse-bin-detector 0.1.12`:
+Current wrapper shape returned by `reverse-bin-detector 0.1.21`:
 
 ```sh
 unshare \
   --map-current-user \
   --pid --fork --mount-proc \
   --ipc --uts --kill-child -- \
-  landrun ... app command ...
+  landrun --best-effort ... --env NAME ... -- app command ...
 ```
+
+- [x] Env values are passed by name (`--env NAME`); landrun copies them from its environment, which Caddy fills from the plan. Secrets never appear in `/proc/*/cmdline`, which every host user can read.
+- [x] `--best-effort` applies every Landlock feature the kernel has. It degrades to no sandbox on a kernel without Landlock, so the detector refuses to plan below Landlock ABI 6 (Linux 6.12, Debian trixie).
+
+## Kernel requirements
+
+| Landlock ABI | Kernel | Effect |
+|---|---|---|
+| < 6 | < 6.12 | Detector refuses to plan; no app starts. |
+| 6–8 | 6.12–7.0 | Filesystem, TCP, abstract UNIX socket and signal scoping enforced. |
+| ≥ 9 | ≥ 7.1 | Also restricts connecting to pathname UNIX sockets. |
+
+- [ ] Below ABI 9, apps can connect to any pathname UNIX socket the `reverse-bin` user can open (for example the D-Bus system bus). Debian trixie-backports kernels (7.2+) close this.
 
 Apps intentionally run under the shared host `reverse-bin` UID. `--map-current-user` maps the app namespace to that service UID instead of root, so existing `reverse-bin`-owned `data/` writes continue to work.
 
@@ -77,7 +90,9 @@ Per-app host UIDs are potential defense-in-depth only. They would not add protec
 Current detector policy for launched apps:
 
 - [x] App source is read/execute-only in the Landlock sandbox (`--rox <app-dir>`). Only `--as-app-dev` and rb-ssh sessions get it read/write (`--rwx`); a running app cannot modify its own code.
-- [x] Non-static app `data/` is read/write when present (`--rw <app-dir>/data`).
+- [x] Non-static app `data/` is read/write when present (`--rw <app-dir>/data`). A symlinked `data` is a plan error: landrun follows symlinks, so `data -> ../other/data` would otherwise grant write access to another app.
+- [x] The detector reads `.env`, `secrets.enc.json`, and entry points through Go `os.Root`; a symlink out of the app directory is an error.
+- [x] `SOCKET_PATH` must stay inside the app directory; Caddy deletes the socket path, outside the sandbox, before launch.
 - [x] Static apps receive read/write access only to `/run/reverse-bin/static-apps/app-<hash>/` for their managed socket; app `data/` remains read-only with the rest of the source tree.
 - [x] `HOME` defaults to app `data/` when the app does not define `HOME`.
 - [x] `TMPDIR` defaults to `data`.
@@ -110,7 +125,7 @@ Executable apps add `--rw <app-dir>/data` when that directory exists, `--ro /sys
 - [x] Package install creates `/var/lib/reverse-bin/keys/age.key` mode `0600`, owned by `reverse-bin:reverse-bin`.
 - [x] Package install creates `/var/lib/reverse-bin/keys/age.pub` mode `0644`.
 - [x] Systemd sets `SOPS_AGE_KEY_FILE=/var/lib/reverse-bin/keys/age.key` for the service.
-- [x] Detector may use the key to decrypt app `secrets.enc.json`.
+- [x] Detector may use the key to decrypt app `secrets.enc.json`. sops runs under landrun with the ciphertext on stdin, read access to system paths and the key only, no network, and a 5 s cap: tenant sops metadata can name KMS, Vault, cloud metadata endpoints, or gpg.
 - [x] Apps may use plaintext `.env` or encrypted `secrets.enc.json`, not both.
 - [x] Child apps receive decrypted environment values only.
 - [x] Child apps do not receive `SOPS_AGE_KEY_FILE` unless explicitly configured by app env.
@@ -164,7 +179,7 @@ rm -rf "$app"
 Expected executable prefix:
 
 ```text
-unshare --map-current-user --pid --fork --mount-proc --ipc --uts --kill-child -- landrun ...
+unshare --map-current-user --pid --fork --mount-proc --ipc --uts --kill-child -- landrun --best-effort ...
 ```
 
 App isolation checks:

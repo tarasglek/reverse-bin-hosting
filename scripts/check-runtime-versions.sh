@@ -26,19 +26,13 @@ check_eq() {
   fi
 }
 
-go_module_version() {
-  bin=$1
-  module=$2
-  go version -m "$bin" 2>/dev/null | awk -v module="$module" '$1 == "mod" && $2 == module { print $3 }'
-}
-
 for name in uv landrun reverse-bin-detector deno sops age age-keygen goaccess; do
   need_file "$name" || true
 done
 
 if [ "$fail" -eq 0 ]; then
   uv_ver=$("$BIN_DIR/uv" --version | awk '{print $2}')
-  landrun_ver=$(go_module_version "$BIN_DIR/landrun" github.com/zouuup/landrun)
+  landrun_ver="v$("$BIN_DIR/landrun" --version | awk '{print $3}')"
   detector_ver="v$("$BIN_DIR/reverse-bin-detector" --version | awk '{print $1}')"
   deno_ver=$("$BIN_DIR/deno" --version | awk 'NR==1 {print $2}')
   sops_ver=$("$BIN_DIR/sops" --version 2>/dev/null | awk 'NR==1 {print $2}')
