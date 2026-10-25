@@ -90,7 +90,7 @@ sudo apt install reverse-bin
 
 Installing a downloaded `.deb` with `sudo apt install ./reverse-bin_*_amd64.deb` sets up the same repository.
 
-The package subscribes the host to its signed apt repository, so `apt upgrade` installs later releases. With `unattended-upgrades` installed, `/etc/apt/apt.conf.d/52reverse-bin-unattended-upgrades` allows it to install them automatically, and the service restarts on upgrade when it is enabled. The repository is served from GitHub Pages at `https://reverse-bin-hosting.coolness.fyi/`, which `/etc/apt/sources.list.d/reverse-bin.sources` points at, verified with `/usr/share/keyrings/reverse-bin-archive-keyring.asc` (fingerprint `31C9 D6D7 981A 9EDD D77A 81B7 B417 3BB2 A80C 12C0`). Delete the sources file to stop updates.
+The package subscribes the host to its signed apt repository, so `apt upgrade` installs later releases. With `unattended-upgrades` installed, `/etc/apt/apt.conf.d/99reverse-bin-unattended-upgrades` allows it to install them automatically, and the service restarts on upgrade when it is enabled. The repository is served from GitHub Pages at `https://reverse-bin-hosting.coolness.fyi/`, which `/etc/apt/sources.list.d/reverse-bin.sources` points at, verified with `/usr/share/keyrings/reverse-bin-archive-keyring.asc` (fingerprint `31C9 D6D7 981A 9EDD D77A 81B7 B417 3BB2 A80C 12C0`). Delete the sources file to stop updates.
 
 unattended-upgrades skips an upgrade that would prompt about a locally modified conffile, such as `/etc/default/reverse-bin`, so releases avoid changing packaged conffiles.
 

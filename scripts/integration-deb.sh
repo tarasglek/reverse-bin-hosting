@@ -33,6 +33,12 @@ apt-get install -y "$PACKAGE"
 grep -q '^URIs: https://reverse-bin-hosting.coolness.fyi/$' /etc/apt/sources.list.d/reverse-bin.sources
 gpg --batch --show-keys /usr/share/keyrings/reverse-bin-archive-keyring.asc >/dev/null
 apt-config dump Unattended-Upgrade::Origins-Pattern | grep -q 'origin=reverse-bin,label=reverse-bin'
+# Hosts often restrict unattended-upgrades to Debian security with a local
+# file that clears the list; reverse-bin's origin must survive it.
+printf '#clear Unattended-Upgrade::Origins-Pattern;\nUnattended-Upgrade::Origins-Pattern { "label=Debian-Security"; };\n' \
+  > /etc/apt/apt.conf.d/52local-security-only
+apt-config dump Unattended-Upgrade::Origins-Pattern | grep -q 'origin=reverse-bin,label=reverse-bin'
+rm /etc/apt/apt.conf.d/52local-security-only
 
 cat > /etc/default/reverse-bin <<EOF
 DOMAIN_SUFFIX=example.test

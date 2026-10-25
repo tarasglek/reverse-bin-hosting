@@ -22,5 +22,5 @@ skills/reverse-bin-web-apps/SKILL.md usr/share/reverse-bin/skills/reverse-bin-we
 SECURITY-POSTURE.md usr/share/doc/reverse-bin/
 packaging/examples/python3-unix-echo usr/share/doc/reverse-bin/examples/
 packaging/apt/reverse-bin.sources etc/apt/sources.list.d/
-packaging/apt/52reverse-bin-unattended-upgrades etc/apt/apt.conf.d/
+packaging/apt/99reverse-bin-unattended-upgrades etc/apt/apt.conf.d/
 packaging/apt/reverse-bin-archive-keyring.asc usr/share/keyrings/

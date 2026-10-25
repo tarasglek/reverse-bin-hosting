@@ -1,5 +1,6 @@
 // Installed by the reverse-bin package: let unattended-upgrades install new
-// reverse-bin releases, which carry its security fixes.
+// reverse-bin releases, which carry its security fixes. Named 99 so apt reads
+// it after local files that "#clear Unattended-Upgrade::Origins-Pattern".
 Unattended-Upgrade::Origins-Pattern {
 	"origin=reverse-bin,label=reverse-bin";
 };
