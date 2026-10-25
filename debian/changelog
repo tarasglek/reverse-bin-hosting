@@ -1,3 +1,10 @@
+reverse-bin (0.0.15-1) unstable; urgency=high
+
+  * fix(packaging): rename the unattended-upgrades drop-in to 99reverse-bin-unattended-upgrades so local files that #clear Origins-Pattern, such as Debian-security-only setups, no longer drop reverse-bin's origin; the old 52 file is removed on upgrade.
+  * fix(packaging): reload and restart systemd only when it is running, so installs in containers and chroots no longer fail.
+
+ -- Taras Glek <taras@glek.net>  Sun, 25 Oct 2026 16:13:18 +0200
+
 reverse-bin (0.0.14-1) unstable; urgency=high
 
   * fix(security): bundle reverse-bin-detector v0.1.21; closes app escapes via a symlinked data dir, secrets on landrun's command line, and SOCKET_PATH outside the app. sops decrypts sandboxed with no network.
