@@ -1,3 +1,13 @@
+reverse-bin (0.0.14-1) unstable; urgency=high
+
+  * fix(security): bundle reverse-bin-detector v0.1.21; closes app escapes via a symlinked data dir, secrets on landrun's command line, and SOCKET_PATH outside the app. sops decrypts sandboxed with no network.
+  * fix(security): unpin landrun to v0.1.17, which scopes abstract UNIX sockets and signals; apps need Landlock ABI 6 (Linux 6.12+).
+  * fix(runtime): bundle caddy-reverse-bin v0.3.4 built with Go 1.27.3 (HTTP/2 DoS fixes), uv 0.13.5, Deno v2.9.8.
+  * feat(packaging): subscribe hosts to the signed apt repository at https://reverse-bin-hosting.coolness.fyi/ and allow unattended-upgrades to install it.
+  * fix(packaging): depend on adduser.
+
+ -- Taras Glek <taras@glek.net>  Sun, 25 Oct 2026 14:50:19 +0200
+
 reverse-bin (0.0.13-1) unstable; urgency=medium
 
   * feat(runtime): bump reverse-bin-detector to v0.1.19; per-app SSH sessions can edit app source and deploy with git push.
